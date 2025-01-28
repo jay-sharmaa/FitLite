@@ -308,7 +308,7 @@ fun MySearchBar(onClose: ()->Unit) {
         },
         active = active,
         onActiveChange = { active = it
-                         if(!active) onClose()},
+            if(!active) onClose()},
         placeholder = { Text("Search...") },
         leadingIcon = {
             Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
