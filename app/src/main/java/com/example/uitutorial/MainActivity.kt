@@ -1,17 +1,17 @@
 package com.example.uitutorial
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -67,8 +68,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.uitutorial.components.NavigationItem
+import com.example.uitutorial.navigation.DrawerScreen
+import com.example.uitutorial.navigation.HelpFeedbackScreen
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.ProfilePage
+import com.example.uitutorial.pages.SettingScreen
 import com.example.uitutorial.pages.SettingsPage
 import com.example.uitutorial.ui.theme.Purple40
 import com.example.uitutorial.ui.theme.UITutorialTheme
@@ -90,7 +94,6 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun MainScreen() {
-
     val drawerScreens = listOf(
         DrawerScreen.Settings,
         DrawerScreen.HelpFeedback
@@ -114,7 +117,6 @@ fun MainScreen() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-
     LaunchedEffect(drawerViewModel.isDrawerOpen) {
         if (drawerViewModel.isDrawerOpen) {
             drawerState.open()
@@ -131,6 +133,7 @@ fun MainScreen() {
                 drawerContainerColor = Purple40 // change theme
             ) {
                 DrawerHeader()
+                Divider()
                 DrawerBody(
                     drawerScreens = drawerScreens,
                     onDestinationClicked = { screen ->
@@ -216,7 +219,7 @@ fun MainScreen() {
                                 }
                             },
                             icon = { Icon(item.icon, contentDescription = item.title, tint = Color.Black) },
-                            label = { Text(item.title) }
+                            label = { Text(item.title, color = Color.Black) }
                         )
                     }
                 }
@@ -334,7 +337,7 @@ fun DrawerHeader() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 64.dp)
+            .padding(all = 48.dp)
     ) {
         Text(
             text = "My App",
@@ -348,13 +351,28 @@ fun DrawerBody(
     drawerScreens: List<DrawerScreen>,
     onDestinationClicked: (DrawerScreen) -> Unit
 ) {
+
     drawerScreens.forEach { screen ->
-        NavigationDrawerItem(
-            icon = { Icon(screen.icon, contentDescription = screen.title) },
-            label = { Text(screen.title) },
-            selected = false,
-            onClick = { onDestinationClicked(screen) },
-            modifier = Modifier.padding(horizontal = 12.dp)
-        )
+        Box(
+            modifier = Modifier
+                .padding(vertical = 16.dp)
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Box {
+                NavigationDrawerItem(
+                    modifier = Modifier.fillMaxSize(),
+                    icon = {
+                        Icon(
+                            screen.icon, contentDescription = screen.title, tint = Color.Black,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    },
+                    label = { Text(screen.title, color = Color.Black) },
+                    selected = false,
+                    onClick = { onDestinationClicked(screen) },
+                )
+            }
+        }
     }
 }
