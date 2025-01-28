@@ -11,18 +11,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
@@ -32,10 +26,8 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -70,6 +62,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.uitutorial.components.NavigationItem
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.ProfilePage
@@ -90,10 +86,19 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun MainScreen() {
+
+    val drawerScreens = listOf(
+        DrawerScreen.Settings,
+        DrawerScreen.HelpFeedback
+    )
+
+    val navController = rememberNavController()
+    var currentScreen by remember { mutableStateOf<DrawerScreen>(DrawerScreen.Settings) }
+
     val drawerViewModel: DrawerViewModel = viewModel()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     var active by remember {
@@ -105,18 +110,18 @@ fun MainScreen() {
         NavigationItem("Profile", Icons.Default.Person),
         NavigationItem("Settings", Icons.Default.Settings)
     )
-    val drawerState = rememberDrawerState(
-        initialValue = if (drawerViewModel.isDrawerOpen) DrawerValue.Open else DrawerValue.Closed
-    )
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { items.size })
-    val coroutineScope = rememberCoroutineScope()
+
 
     LaunchedEffect(drawerViewModel.isDrawerOpen) {
         if (drawerViewModel.isDrawerOpen) {
             drawerState.open()
+            drawerViewModel.openDrawer()
         } else {
             drawerState.close()
+            drawerViewModel.openDrawer()
         }
     }
 
@@ -125,69 +130,18 @@ fun MainScreen() {
             ModalDrawerSheet(
                 drawerContainerColor = Purple40 // change theme
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Spacer(Modifier.height(12.dp))
-                    Text("FitLite", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
-                    Divider()
-
-                    Text("Section 1", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
-                    Box(
-                        Modifier.padding(all = 16.dp)
-                    ) {
-                        NavigationDrawerItem(
-                            label = { Text("Item 1") },
-                            selected = false,
-                            onClick = {
-
-                            }
-                        )
+                DrawerHeader()
+                DrawerBody(
+                    drawerScreens = drawerScreens,
+                    onDestinationClicked = { screen ->
+                        scope.launch { drawerState.close() }
+                        currentScreen = screen
+                        navController.navigate(screen.route) {
+                            popUpTo(navController.graph.startDestinationId)
+                            launchSingleTop = true
+                        }
                     }
-                    Box(
-                        Modifier.padding(all = 16.dp)
-                    ) {
-                        NavigationDrawerItem(
-                            label = { Text("Item 2") },
-                            selected = false,
-                            onClick = {
-
-                            }
-                        )
-                    }
-
-                    Divider()
-
-                    Text("Section 2", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
-                    Box(
-                        Modifier.padding(all = 16.dp)
-                    ) {
-                        NavigationDrawerItem(
-                            label = { Text("Settings") },
-                            selected = false,
-                            icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
-                            badge = { Text("20") },
-                            onClick = {
-
-                            }
-                        )
-                    }
-                    Box(
-                        Modifier.padding(all = 16.dp)
-                    ) {
-                        NavigationDrawerItem(
-                            label = { Text("Help and feedback") },
-                            selected = false,
-                            icon = { Icon(Icons.Outlined.Person, contentDescription = null) },
-                            onClick = {
-
-                            },
-                        )
-                    }
-                    Spacer(Modifier.height(12.dp))
-                }
+                )
             }
         },
         drawerState = drawerState
@@ -213,7 +167,8 @@ fun MainScreen() {
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Purple40, // change color
                         titleContentColor = Color.White
-                    ), actions = {
+                    ),
+                    actions = {
                         if (!active) {
                             IconButton(onClick = { active = true }) {
                                 Icon(
@@ -246,15 +201,18 @@ fun MainScreen() {
             bottomBar = {
                 NavigationBar(
                     modifier = Modifier.fillMaxWidth(),
-                    containerColor = Purple40, //change color
+                    containerColor = Purple40, // change color
                     tonalElevation = 12.dp
                 ) {
-                    items.forEachIndexed { index, item ->
+                    items.forEachIndexed { _, item ->
                         NavigationBarItem(
-                            selected = pagerState.currentPage == index,
+                            selected = navController.currentBackStackEntryAsState().value?.destination?.route == item.title.toLowerCase(),
                             onClick = {
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(index)
+                                navController.navigate(item.title.toLowerCase()) {
+                                    launchSingleTop = true
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
                                 }
                             },
                             icon = { Icon(item.icon, contentDescription = item.title, tint = Color.Black) },
@@ -264,25 +222,39 @@ fun MainScreen() {
                 }
             }
         ) { paddingValues ->
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) { page ->
-                when (page) {
-                    0 -> HomePage()
-                    1 -> ProfilePage()
-                    2 -> SettingsPage()
+            // NavHost for managing both drawer and bottom navigation
+            NavHost(
+                navController = navController,
+                startDestination = DrawerScreen.Settings.route,
+                modifier = Modifier.padding(paddingValues)
+            ) {
+                // Drawer routes
+                composable(DrawerScreen.Settings.route) {
+                    SettingScreen()
+                }
+                composable(DrawerScreen.HelpFeedback.route) {
+                    HelpFeedbackScreen()
+                }
+
+                // Bottom navigation routes
+                composable("home") {
+                    HomePage()
+                }
+                composable("profile") {
+                    ProfilePage()
+                }
+                composable("settings") {
+                    SettingsPage()
                 }
             }
-
         }
     }
+
     if (active) {
-        MySearchBar(onClose = {active = false})
+        MySearchBar(onClose = { active = false })
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -302,7 +274,6 @@ fun MySearchBar(onClose: ()->Unit) {
         onSearch = {
             if (text.isNotEmpty()) {
                 items.add(text)
-                Log.d("addedornot", items.size.toString())
             }
             onClose()
         },
@@ -355,5 +326,35 @@ fun MySearchBar(onClose: ()->Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DrawerHeader() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 64.dp)
+    ) {
+        Text(
+            text = "My App",
+            style = MaterialTheme.typography.headlineMedium
+        )
+    }
+}
+
+@Composable
+fun DrawerBody(
+    drawerScreens: List<DrawerScreen>,
+    onDestinationClicked: (DrawerScreen) -> Unit
+) {
+    drawerScreens.forEach { screen ->
+        NavigationDrawerItem(
+            icon = { Icon(screen.icon, contentDescription = screen.title) },
+            label = { Text(screen.title) },
+            selected = false,
+            onClick = { onDestinationClicked(screen) },
+            modifier = Modifier.padding(horizontal = 12.dp)
+        )
     }
 }
