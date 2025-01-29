@@ -67,7 +67,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.uitutorial.components.NavigationItem
 import com.example.uitutorial.navigation.DrawerScreen
 import com.example.uitutorial.navigation.HelpFeedbackScreen
 import com.example.uitutorial.pages.HomePage
@@ -95,36 +94,37 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val drawerScreens = listOf(
+        DrawerScreen.Home,
+        DrawerScreen.Profile,
         DrawerScreen.Settings,
-        DrawerScreen.HelpFeedback
+        DrawerScreen.HelpFeedback,
     )
 
     val navController = rememberNavController()
-    var currentScreen by remember { mutableStateOf<DrawerScreen>(DrawerScreen.Settings) }
-
+    var currentScreen by remember { mutableStateOf<DrawerScreen>(DrawerScreen.Home) }
+    var intialDrawerState by remember {
+        mutableStateOf(0)
+    }
     val drawerViewModel: DrawerViewModel = viewModel()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     var active by remember {
         mutableStateOf(false)
     }
 
-    val items = listOf(
-        NavigationItem("Home", Icons.Default.Home),
-        NavigationItem("Profile", Icons.Default.Person),
-        NavigationItem("Settings", Icons.Default.Settings)
-    )
-
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(drawerViewModel.isDrawerOpen) {
-        if (drawerViewModel.isDrawerOpen) {
-            drawerState.open()
-            drawerViewModel.openDrawer()
-        } else {
-            drawerState.close()
-            drawerViewModel.openDrawer()
+        if(intialDrawerState != 0){
+            if (drawerViewModel.isDrawerOpen) {
+                drawerState.open()
+                drawerViewModel.openDrawer()
+            } else {
+                drawerState.close()
+                drawerViewModel.openDrawer()
+            }
         }
+        intialDrawerState = 1
     }
 
     ModalNavigationDrawer(
@@ -139,10 +139,7 @@ fun MainScreen() {
                     onDestinationClicked = { screen ->
                         scope.launch { drawerState.close() }
                         currentScreen = screen
-                        navController.navigate(screen.route) {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
+                        navController.navigate(screen.route)
                     }
                 )
             }
@@ -201,34 +198,11 @@ fun MainScreen() {
                     }
                 )
             },
-            bottomBar = {
-                NavigationBar(
-                    modifier = Modifier.fillMaxWidth(),
-                    containerColor = Purple40, // change color
-                    tonalElevation = 12.dp
-                ) {
-                    items.forEachIndexed { _, item ->
-                        NavigationBarItem(
-                            selected = navController.currentBackStackEntryAsState().value?.destination?.route == item.title.toLowerCase(),
-                            onClick = {
-                                navController.navigate(item.title.toLowerCase()) {
-                                    launchSingleTop = true
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
-                                    }
-                                }
-                            },
-                            icon = { Icon(item.icon, contentDescription = item.title, tint = Color.Black) },
-                            label = { Text(item.title, color = Color.Black) }
-                        )
-                    }
-                }
-            }
         ) { paddingValues ->
             // NavHost for managing both drawer and bottom navigation
             NavHost(
                 navController = navController,
-                startDestination = DrawerScreen.Settings.route,
+                startDestination = DrawerScreen.Home.route,
                 modifier = Modifier.padding(paddingValues)
             ) {
                 // Drawer routes
