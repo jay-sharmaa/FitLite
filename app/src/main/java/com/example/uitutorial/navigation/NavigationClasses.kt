@@ -11,7 +11,7 @@ sealed class DrawerScreen(val route: String, val title: String, val icon: ImageV
 
     data object Profile : DrawerScreen(route = "profile", title = "Profile", Icons.Filled.Person)
 
-    data object Settings : DrawerScreen(route = "app_settings", title = "App Settings", Icons.Filled.Home)
+    data object Settings : DrawerScreen(route = "settings", title = "Settings", Icons.Filled.Home)
 
     data object HelpFeedback : DrawerScreen(route = "helpFeedback", title = "Help Feedback", Icons.Filled.Person)
 }

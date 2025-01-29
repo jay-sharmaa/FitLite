@@ -71,7 +71,6 @@ import com.example.uitutorial.navigation.DrawerScreen
 import com.example.uitutorial.navigation.HelpFeedbackScreen
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.ProfilePage
-import com.example.uitutorial.pages.SettingScreen
 import com.example.uitutorial.pages.SettingsPage
 import com.example.uitutorial.ui.theme.Purple40
 import com.example.uitutorial.ui.theme.UITutorialTheme
@@ -199,28 +198,22 @@ fun MainScreen() {
                 )
             },
         ) { paddingValues ->
-            // NavHost for managing both drawer and bottom navigation
             NavHost(
                 navController = navController,
                 startDestination = DrawerScreen.Home.route,
                 modifier = Modifier.padding(paddingValues)
             ) {
                 // Drawer routes
-                composable(DrawerScreen.Settings.route) {
-                    SettingScreen()
-                }
                 composable(DrawerScreen.HelpFeedback.route) {
                     HelpFeedbackScreen()
                 }
-
-                // Bottom navigation routes
-                composable("home") {
+                composable(DrawerScreen.Home.route) {
                     HomePage()
                 }
-                composable("profile") {
+                composable(DrawerScreen.Profile.route) {
                     ProfilePage()
                 }
-                composable("settings") {
+                composable(DrawerScreen.Settings.route) {
                     SettingsPage()
                 }
             }
