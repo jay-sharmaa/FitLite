@@ -1,89 +1,95 @@
-package com.example.uitutorial.components
-
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.uitutorial.ui.theme.Purple40
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DrawerNavigation(
-    content: @Composable (PaddingValues) -> Unit
-){
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
-    ModalNavigationDrawer(
-        drawerContent = {
-            ModalDrawerSheet {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Spacer(Modifier.height(12.dp))
-                    Text("Drawer Title", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
-                    Divider()
-
-                    Text("Section 1", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
-                    NavigationDrawerItem(
-                        label = { Text("Item 1") },
-                        selected = false,
-                        onClick = { /* Handle click */ }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Item 2") },
-                        selected = false,
-                        onClick = { /* Handle click */ }
-                    )
-
-                    Divider()
-
-                    Text("Section 2", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
-                    NavigationDrawerItem(
-                        label = { Text("Settings") },
-                        selected = false,
-                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
-                        badge = { Text("20") }, // Placeholder
-                        onClick = { /* Handle click */ }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Help and feedback") },
-                        selected = false,
-                        icon = { Icon(Icons.Outlined.Person, contentDescription = null) },
-                        onClick = { /* Handle click */ },
-                    )
-                    Spacer(Modifier.height(12.dp))
+fun MyBottomAppBar(
+    pagerState: PagerState,
+    scope: CoroutineScope
+) {
+    NavigationBar(
+        containerColor = Purple40,
+        contentColor = Color.Black
+    ) {
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Home,
+                    contentDescription = "Home"
+                )
+            },
+            label = { Text("Home") },
+            selected = pagerState.currentPage == 0,
+            onClick = {
+                scope.launch {
+                    pagerState.animateScrollToPage(0)
                 }
-            }
-        },
-        drawerState = drawerState
-    ){
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.Black,
+                selectedTextColor = Color.Black,
+                unselectedIconColor = Color.Black
+            ),
+            alwaysShowLabel = false
+        )
 
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile"
+                )
+            },
+            label = { Text("Profile") },
+            selected = pagerState.currentPage == 1,
+            onClick = {
+                scope.launch {
+                    pagerState.animateScrollToPage(1)
+                }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.Black,
+                selectedTextColor = Color.Black,
+                unselectedIconColor = Color.Black
+            ),
+            alwaysShowLabel = false
+        )
+
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings"
+                )
+            },
+            label = { Text("Settings") },
+            selected = pagerState.currentPage == 2,
+            onClick = {
+                scope.launch {
+                    pagerState.animateScrollToPage(2)
+                }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.Black,
+                selectedTextColor = Color.Black,
+                unselectedIconColor = Color.Black
+            ),
+            alwaysShowLabel = false
+        )
     }
 }
