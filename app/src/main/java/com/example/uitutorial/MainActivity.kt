@@ -1,7 +1,14 @@
 package com.example.uitutorial
 
 import MyBottomAppBar
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -25,6 +32,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +57,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import com.example.uitutorial.navigation.DrawerScreen
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.ProfilePage
@@ -61,7 +70,57 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             UITutorialTheme {
-                MainScreen()
+                Button(modifier = Modifier.padding(20.dp), onClick = {
+                    // Get Bluetooth Manager and Adapter
+                    val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
+                    val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
+
+                    // Check if Bluetooth Adapter is available
+                    if (bluetoothAdapter == null) {
+                        // Handle case when Bluetooth is not available
+                        Log.e("Bluetooth", "Bluetooth is not supported on this device.")
+                        return@Button
+                    }
+
+                    // Check if Bluetooth is disabled
+                    if (!bluetoothAdapter.isEnabled) {
+                        // Check for necessary permission
+                        if (ActivityCompat.checkSelfPermission(
+                                this,
+                                Manifest.permission.BLUETOOTH_CONNECT
+                            ) != PackageManager.PERMISSION_GRANTED) {
+                            // Request permission if not granted
+                            ActivityCompat.requestPermissions(
+                                this,
+                                arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+                                8
+                            )
+                            return@Button
+                        }
+
+                        // Intent to enable Bluetooth if disabled
+                        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        val REQUEST_ENABLE_BT = 0
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+                    }
+                }) {
+                    Text("Click Me")
+                }
+
+                // Handle permission result (in your Activity's onRequestPermissionsResult)
+                fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+                    if (requestCode == 8) {
+                        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                            // Permission granted, now enable Bluetooth
+                            val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+                            bluetoothAdapter?.enable()
+                        } else {
+                            // Permission denied, handle gracefully
+                            Toast.makeText(this, "Bluetooth permission denied", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
             }
         }
     }
