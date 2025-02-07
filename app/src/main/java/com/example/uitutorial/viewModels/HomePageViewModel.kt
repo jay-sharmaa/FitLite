@@ -5,12 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 
 val Context.dataStore by preferencesDataStore(name = "user_preferences")
-
 
 class HomePageViewModel(private val context: Context) : ViewModel() {
 
@@ -19,7 +17,6 @@ class HomePageViewModel(private val context: Context) : ViewModel() {
 
     // Load the stored workout days from DataStore when the ViewModel is initialized
     init {
-
         viewModelScope.launch {
             getDaysWorkout(context).collect {
                 _daysWorkout.value = it

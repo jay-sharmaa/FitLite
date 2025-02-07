@@ -5,15 +5,13 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 // Sealed class to represent screens
-sealed class DrawerScreen(val route: String, val title: String, val icon: ImageVector) {
+sealed class BottomScreens(val route: String, val title: String, val icon: ImageVector) {
 
-    data object Home : DrawerScreen(route = "home", title = "Home", Icons.Filled.Home)
+    data object Home : BottomScreens(route = "home", title = "Home", Icons.Filled.Home)
 
-    data object Profile : DrawerScreen(route = "profile", title = "Profile", Icons.Filled.Person)
+    data object Profile : BottomScreens(route = "profile", title = "Profile", Icons.Filled.Person)
 
-    data object Settings : DrawerScreen(route = "settings", title = "Settings", Icons.Filled.Home)
-
-    data object HelpFeedback : DrawerScreen(route = "helpFeedback", title = "Help Feedback", Icons.Filled.Person)
+    data object Settings : BottomScreens(route = "settings", title = "Settings", Icons.Filled.Settings)
 }
 
 

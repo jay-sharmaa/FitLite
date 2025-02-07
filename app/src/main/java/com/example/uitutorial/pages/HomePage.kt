@@ -1,5 +1,7 @@
 package com.example.uitutorial.pages
 
+import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,23 +13,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,36 +30,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.example.uitutorial.components.RowLayout
 import com.example.uitutorial.viewModels.HomePageViewModel
-import com.example.uitutorial.viewModels.HomePageViewModelFactory
+import com.example.uitutorial.viewModels.dataStore
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
+val Context.dataStore by preferencesDataStore(name = "user_preferences")
+
 @Composable
-fun HomePage(viewModel: HomePageViewModel){
+fun HomePage(viewModel: HomePageViewModel, context: Context){
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopCenter
+        modifier = Modifier.fillMaxSize().padding(all = 8.dp),
+        contentAlignment = Alignment.TopCenter,
     ) {
         Column {
-            WeeklyCard(viewModel)
+            WeeklyCard(viewModel, context)
             Spacer(modifier = Modifier.height(10.dp))
-            RowLayout()
+            RowLayout(viewModel)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeeklyCard(viewModel: HomePageViewModel){
+fun WeeklyCard(viewModel: HomePageViewModel, context: Context){
 
     val openAlertDialog = remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf("") }
@@ -108,14 +103,17 @@ fun WeeklyCard(viewModel: HomePageViewModel){
     when{
         openAlertDialog.value -> {
             AlertDialogExample(
-                onDismissRequest = { openAlertDialog.value = false },
+                setDays = {
+                    viewModel.setDaysWorkout(it.toInt())
+                },
+                onDismissRequest = {
+                    openAlertDialog.value = false
+                                   },
                 onConfirmation = {
                     openAlertDialog.value = false
-                    println("Confirmation registered") // Add logic here to handle confirmation.
                 },
-                dialogTitle = "Alert dialog example",
-                dialogText = "This is an example of an alert dialog with buttons.",
-                icon = Icons.Default.Info
+                dialogText = "Set your weekly goal",
+                context = context
             )
         }
     }
@@ -123,21 +121,35 @@ fun WeeklyCard(viewModel: HomePageViewModel){
 
 @Composable
 fun AlertDialogExample(
+    setDays: (String) -> Unit,
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
-    dialogTitle: String,
     dialogText: String,
-    icon: ImageVector,
+    context: Context
 ) {
+    val DAYS_WORKOUT_KEY = intPreferencesKey("day_workout")
+
+    var textFieldValue by remember { mutableStateOf("") }
     AlertDialog(
-        icon = {
-            Icon(icon, contentDescription = "Example Icon")
-        },
         title = {
-            Text(text = dialogTitle)
+            Text(text = dialogText)
         },
         text = {
-            Text(text = dialogText)
+            OutlinedTextField(
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                placeholder = {
+                    Text(text = "")
+                },
+                value = textFieldValue, 
+                onValueChange = {
+                    if(it.toInt() > 7){
+                        Toast.makeText(context, "Select Appropriate Number Of Days", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        textFieldValue = it
+                    }
+                }
+            )
         },
         onDismissRequest = {
             onDismissRequest()
@@ -146,6 +158,7 @@ fun AlertDialogExample(
             TextButton(
                 onClick = {
                     onConfirmation()
+                    setDays(textFieldValue)
                 }
             ) {
                 Text("Confirm")

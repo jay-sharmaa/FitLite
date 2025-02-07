@@ -1,21 +1,13 @@
 package com.example.uitutorial
 
 import MyBottomAppBar
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
+import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,6 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
@@ -38,7 +32,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,25 +52,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import com.example.uitutorial.navigation.DrawerScreen
+import com.example.uitutorial.navigation.BottomScreens
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.ProfilePage
 import com.example.uitutorial.pages.SettingsPage
 import com.example.uitutorial.ui.theme.Purple40
-import com.example.uitutorial.ui.theme.UITutorialTheme
+import com.example.uitutorial.ui.theme.Purple80
 import com.example.uitutorial.viewModels.HomePageViewModel
 import com.example.uitutorial.viewModels.HomePageViewModelFactory
 
 
 class MainActivity : ComponentActivity() {
-    val homePageViewModel: HomePageViewModel by viewModels {
+    private val homePageViewModel: HomePageViewModel by viewModels {
         HomePageViewModelFactory(applicationContext)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,7 +79,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     shadowElevation = 20.dp
                 ) {
-                    MainScreen(homePageViewModel)
+                    MainScreen(homePageViewModel, applicationContext)
                 }
             }
         }
@@ -96,13 +88,13 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(homePageViewModel: HomePageViewModel) {
+fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
 
 
     val bottomScreens = listOf(
-        DrawerScreen.Home,
-        DrawerScreen.Profile,
-        DrawerScreen.Settings,
+        BottomScreens.Home,
+        BottomScreens.Settings,
+        BottomScreens.Profile,
     )
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -129,7 +121,7 @@ fun MainScreen(homePageViewModel: HomePageViewModel) {
                         color = Color.Black
                     ) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Purple40, // change color
+                    containerColor = Purple80,
                     titleContentColor = Color.White
                 ),
                 actions = {
@@ -141,37 +133,30 @@ fun MainScreen(homePageViewModel: HomePageViewModel) {
                                 tint = Color.Black
                             )
                         }
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.padding(12.dp)
-                        ) {
-                            BadgedBox(badge = {
-                                Badge { Text("2") }
-                            }) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clickable { },
-                                    imageVector = Icons.Outlined.Person,
-                                    contentDescription = "Person",
-                                    tint = Color.Black
-                                )
-                            }
-                        }
                     }
                 }
             ) },
         bottomBar = {
-            MyBottomAppBar(pagerState = pagerState, scope = scope)
+            Box(
+                modifier = Modifier.navigationBarsPadding().padding(bottom = 15.dp, start = 15.dp, end = 15.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .border(
+                        shape = RoundedCornerShape(20.dp),
+                        width = 0.dp,
+                        color = Color.White
+                    )
+            )
+            {
+                MyBottomAppBar(pagerState = pagerState, scope = scope)
+            }
         }
         ){padding ->
         Box(
-            modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             HorizontalPager(modifier = Modifier.padding(padding), state = pagerState) { page ->
                 when (page) {
-                    0 -> HomePage(homePageViewModel)
+                    0 -> HomePage(homePageViewModel, context)
                     1 -> SettingsPage()
                     2 -> ProfilePage()
                 }
