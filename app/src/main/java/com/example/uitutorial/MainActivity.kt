@@ -3,6 +3,7 @@ package com.example.uitutorial
 import MyBottomAppBar
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -49,6 +50,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -175,11 +177,8 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
 fun MySearchBar(onClose: ()->Unit) {
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(true) }
-    val items = remember {
-        mutableStateListOf(
-            "Android developer",
-            "Flutter developer"
-        )
+    val items = rememberSaveable {
+        mutableStateListOf("Android developer", "Flutter developer")
     }
     SearchBar(
         modifier = Modifier.fillMaxWidth(),
@@ -188,6 +187,7 @@ fun MySearchBar(onClose: ()->Unit) {
         onSearch = {
             if (text.isNotEmpty()) {
                 items.add(text)
+                Log.d("MySearchBar", items.joinToString(", "))
             }
             onClose()
         },

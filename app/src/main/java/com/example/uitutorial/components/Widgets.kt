@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
@@ -38,7 +40,8 @@ fun Widgets(name: String, publisher: String, imageVector: Int) {
                 modifier = Modifier.width(200.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text("$name ", fontSize = 14.sp)
+                Text("$name ", fontSize = 18.sp)
+                Spacer(modifier = Modifier.height(10.dp))
                 Text(text = "$publisher ", fontSize = 12.sp)
             }
         }
