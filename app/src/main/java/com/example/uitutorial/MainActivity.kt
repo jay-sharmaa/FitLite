@@ -1,24 +1,22 @@
 package com.example.uitutorial
 
 import MyBottomAppBar
+import MyNav
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,9 +28,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -64,7 +59,6 @@ import com.example.uitutorial.navigation.BottomScreens
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.ProfilePage
 import com.example.uitutorial.pages.SettingsPage
-import com.example.uitutorial.ui.theme.Purple40
 import com.example.uitutorial.ui.theme.Purple80
 import com.example.uitutorial.viewModels.HomePageViewModel
 import com.example.uitutorial.viewModels.HomePageViewModelFactory
@@ -81,7 +75,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     shadowElevation = 20.dp
                 ) {
-                    MainScreen(homePageViewModel, applicationContext)
+                    MyNav(homePageViewModel = homePageViewModel, context = applicationContext)
                 }
             }
         }
@@ -91,8 +85,6 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
-
-
     val bottomScreens = listOf(
         BottomScreens.Home,
         BottomScreens.Settings,
