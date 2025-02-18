@@ -26,7 +26,9 @@ import com.example.fitlite.presentation.ViewModel.BackgroundViewModel
 import com.example.fitlite.presentation.pages.HeartRatePage
 import com.example.fitlite.presentation.pages.HomeLayout
 import com.example.fitlite.presentation.utils.MyNav
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val backgroundViewModel: BackgroundViewModel by viewModels {
         BackGroundViewModelFactory(applicationContext)
