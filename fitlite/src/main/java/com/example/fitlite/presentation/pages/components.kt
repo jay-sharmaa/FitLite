@@ -54,13 +54,13 @@ fun HomeLayout(
             curvedComposable {
                 Icon(
                     imageVector = Icons.Default.Favorite,
-                    contentDescription = "health",
+                    contentDescription = "Heart",
                     tint = Color.White,
                     modifier = Modifier
                         .size(30.dp)
                         .rotate(-5f)
                         .clickable {
-
+                            navController.navigate(route = "heartRate")
                         }
                 )
             }
@@ -73,6 +73,9 @@ fun HomeLayout(
                     modifier = Modifier
                         .size(30.dp)
                         .rotate(-30f)
+                        .clickable {
+                            navController.navigate(route = "exercise")
+                        }
                 )
             }
 
@@ -84,6 +87,9 @@ fun HomeLayout(
                     modifier = Modifier
                         .size(30.dp)
                         .rotate(-70f)
+                        .clickable {
+                            navController.navigate(route = "music")
+                        }
                 )
             }
 
@@ -96,6 +102,9 @@ fun HomeLayout(
                     modifier = Modifier
                         .size(30.dp)
                         .rotate(-90f)
+                        .clickable {
+                            navController.navigate(route = "run")
+                        }
                 )
             }
 
@@ -107,6 +116,9 @@ fun HomeLayout(
                     modifier = Modifier
                         .size(30.dp)
                         .rotate(-135f)
+                        .clickable {
+                            navController.navigate(route = "walk")
+                        }
                 )
             }
 
@@ -118,6 +130,9 @@ fun HomeLayout(
                     modifier = Modifier
                         .size(30.dp)
                         .rotate(-180f)
+                        .clickable {
+                            navController.navigate(route = "oxygen")
+                        }
                 )
             }
 
