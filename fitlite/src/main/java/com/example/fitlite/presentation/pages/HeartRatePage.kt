@@ -21,11 +21,12 @@ import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
 import com.example.fitlite.R
+import com.example.fitlite.presentation.ViewModel.BackgroundViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun HeartRatePage(context : Context, navController: NavController){
+fun HeartRatePage(context : Context, navController: NavController, backgroundViewModel: BackgroundViewModel){
     var isAnimating by remember { mutableStateOf(false) }
     val scale = remember { mutableStateOf(1.0f) }
     val coroutineScope = rememberCoroutineScope()

@@ -26,10 +26,12 @@ import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.TimeTextDefaults
 import androidx.wear.compose.material.TimeTextDefaults.CurvedTextSeparator
 import com.example.fitlite.R
+import com.example.fitlite.presentation.ViewModel.BackgroundViewModel
 
 @Composable
 fun HomeLayout(
     context: Context,
+    backgroundViewModel: BackgroundViewModel,
     modifier: Modifier = Modifier,
     timeTextStyle: TextStyle = TimeTextDefaults.timeTextStyle(),
     startCurvedContent: (CurvedScope.() -> Unit)? = null,

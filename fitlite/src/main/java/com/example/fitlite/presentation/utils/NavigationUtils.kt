@@ -19,12 +19,12 @@ fun MyNav(backgroundViewModel: BackgroundViewModel, context : Context){
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "home") {
-        composable("home") { HomeLayout(context = context, navController = navController) }
-        composable("heartRate") { HeartRatePage(context = context, navController = navController) }
-        composable("music") { Music(context = context, navController = navController) }
-        composable("oxygen") { Oxygen(context = context, navController = navController) }
-        composable("exercise") { Exercise(context, navController = navController) }
-        composable("run") { Run(context, navController = navController) }
-        composable("walk") { Walk(context, navController = navController) }
+        composable("home") { HomeLayout(context = context, navController = navController, backgroundViewModel = BackgroundViewModel(context)) }
+        composable("heartRate") { HeartRatePage(context = context, navController = navController, backgroundViewModel = BackgroundViewModel(context)) }
+        composable("music") { Music(context = context, navController = navController, backgroundViewModel = BackgroundViewModel(context)) }
+        composable("oxygen") { Oxygen(context = context, navController = navController, backgroundViewModel = BackgroundViewModel(context)) }
+        composable("exercise") { Exercise(context, navController = navController, backgroundViewModel = BackgroundViewModel(context)) }
+        composable("run") { Run(context, navController = navController, backgroundViewModel = BackgroundViewModel(context)) }
+        composable("walk") { Walk(context, navController = navController, backgroundViewModel = BackgroundViewModel(context)) }
     }
 }
