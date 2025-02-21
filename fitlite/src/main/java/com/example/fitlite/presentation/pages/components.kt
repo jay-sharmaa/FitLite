@@ -93,7 +93,7 @@ fun HomeLayout(
                 )
             }
 
-            // Custom XML Drawables (Force Upright with Rotation)
+
             curvedComposable {
                 Icon(
                     painter = painterResource(id = R.drawable.run_fitlite),
