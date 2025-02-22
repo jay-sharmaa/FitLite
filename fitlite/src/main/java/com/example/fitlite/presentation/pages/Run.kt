@@ -97,7 +97,7 @@ fun Run(context: Context, navController: NavController, backgroundViewModel: Bac
 
                     var (hour, minutes) = time.value.split(":").map { it.toInt() }
                     while ((hour > 0 || minutes > 0) && isRunning.value) {
-                        delay(1000)
+                        delay(60000)
                         if (minutes == 0) {
                             if (hour > 0) {
                                 hour--
@@ -112,7 +112,7 @@ fun Run(context: Context, navController: NavController, backgroundViewModel: Bac
                         showDialog.value = true
                     }
                 }
-
+                backgroundViewModel.readRunningDistance()
             }
         ){
             if(!isRunning.value){

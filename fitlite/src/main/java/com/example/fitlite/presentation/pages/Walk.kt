@@ -45,6 +45,8 @@ import com.example.fitlite.presentation.ViewModel.BackgroundViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.time.Duration
+
 @Composable
 fun Walk(context: Context, navController: NavController, backgroundViewModel: BackgroundViewModel){
     val scale = remember { mutableStateOf(1.0f) }
@@ -97,7 +99,7 @@ fun Walk(context: Context, navController: NavController, backgroundViewModel: Ba
 
                     var (hour, minutes) = time.value.split(":").map { it.toInt() }
                     while ((hour > 0 || minutes > 0) && isRunning.value) {
-                        delay(1000)
+                        delay(60000)
                         if (minutes == 0) {
                             if (hour > 0) {
                                 hour--
@@ -112,7 +114,7 @@ fun Walk(context: Context, navController: NavController, backgroundViewModel: Ba
                         showDialog.value = true
                     }
                 }
-
+                backgroundViewModel.readWalkingDistance()
             }
         ){
             if(!isRunning.value){

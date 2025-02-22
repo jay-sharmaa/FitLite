@@ -1,6 +1,7 @@
 package com.example.fitlite.presentation
 
 import android.Manifest
+import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.Sensor
@@ -29,24 +30,22 @@ import com.example.fitlite.presentation.utils.MyNav
 
 class MainActivity : ComponentActivity() {
     private val backgroundViewModel: BackgroundViewModel by viewModels {
-        BackGroundViewModelFactory(applicationContext)
+        BackGroundViewModelFactory(application)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
+
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setTheme(android.R.style.Theme_DeviceDefault)
+
+        backgroundViewModel.requestPermissions(this)
         setContent {
-            Scaffold(
-                timeText = { TimeText() }
-            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(14.dp)
                 ) {
-                    MyNav(backgroundViewModel = backgroundViewModel, context = applicationContext)
+                    MyNav(backgroundViewModel = backgroundViewModel, context = applicationContext, application)
                 }
-            }
         }
     }
 }

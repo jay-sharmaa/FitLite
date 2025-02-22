@@ -53,6 +53,7 @@ fun Oxygen(context : Context, navController: NavController, backgroundViewModel:
                         isAnimating = false
                     }
                 }
+                backgroundViewModel.readOxygenLevel()
             }
         ){
             Text("Measure O2", modifier = Modifier.padding(10.dp),)

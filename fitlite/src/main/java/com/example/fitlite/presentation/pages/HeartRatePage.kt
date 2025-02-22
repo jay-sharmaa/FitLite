@@ -75,7 +75,7 @@ fun HeartRatePage(context : Context, navController: NavController, backgroundVie
                         isAnimating = false
                     }
                 }
-
+                backgroundViewModel.readHeartRate()
             }
         ){
             Text("Heart Rate", modifier = Modifier.padding(10.dp),)
