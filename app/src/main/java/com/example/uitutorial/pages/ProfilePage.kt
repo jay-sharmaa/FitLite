@@ -2,15 +2,18 @@ package com.example.uitutorial.pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
@@ -42,11 +45,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.uitutorial.R
+import com.example.uitutorial.components.WorkoutSettingTile
+import com.example.uitutorial.components.WorkoutSettings
 import kotlinx.coroutines.delay
 @Composable
-@Preview(showSystemUi = true)
-fun ProfilePage() {
+fun ProfilePage(navController: NavHostController) {
     var currentProgress by remember { mutableStateOf(0f) }
     var loading by remember { mutableStateOf(true) }
 
@@ -90,104 +95,33 @@ fun ProfilePage() {
                     .align(Alignment.BottomCenter),
                 strokeWidth = 5.dp)
         }
-        TextButton(onClick = {
-
-        }) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Workout Settings", style = TextStyle(color = Color.Black, fontSize = 20.sp))
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Search",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
+        ProfileSettingTile(title = "Workout Settings", navController, "workoutSettings")
         Divider()
-        TextButton(onClick = {
-
-        }){
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("General Settings", style = TextStyle(color = Color.Black, fontSize = 20.sp))
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Search",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
+        ProfileSettingTile(title = "General Settings", navController, "generalSettings")
         Divider()
-        TextButton(onClick = {
-
-        }) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Voice Feedback", style = TextStyle(color = Color.Black), fontSize = 20.sp)
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Search",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
+        ProfileSettingTile(title = "Voice Feedback", navController, "voiceFeedback")
         Divider()
-        TextButton(onClick = {
-
-        }) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Sync Watch", style = TextStyle(color = Color.Black), fontSize = 20.sp)
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Search",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
+        ProfileSettingTile(title = "Sync Watch", navController, "syncWatch")
         Divider()
-        TextButton(onClick = {
-
-        }) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Sync Spotify", style = TextStyle(color = Color.Black), fontSize = 20.sp)
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Search",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-        Divider(thickness = 10.dp)
-        TextButton(onClick = {
-
-        }) {
-            Text("Change App Settings", style = TextStyle(color = Color.Black), fontSize = 20.sp)
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = "Search",
-                tint = Color.Black,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        ProfileSettingTile(title = "Sync Spotify", navController, "syncSpotify")
     }
 }
+
+@Composable
+fun ProfileSettingTile(title: String, navController: NavHostController, route : String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+            .clickable {
+                navController.navigate(route = route)
+            }
+    ) {
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(text = title, fontSize = 20.sp)
+    }
+}
+
 
 suspend fun loadProgress(updateProgress: (Float) -> Unit) {
     for (i in 1..100) {

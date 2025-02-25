@@ -2,6 +2,7 @@ package com.example.uitutorial.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,14 +19,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.uitutorial.ui.theme.Gray40
 
 @Composable
-fun Widgets(name: String, publisher: String, imageVector: Int) {
+fun Widgets(name: String, publisher: String, imageVector: Int, navController: NavHostController) {
     Box(
         modifier = Modifier
             .size(width = 200.dp, height = 180.dp)
-            .background(color = Gray40),
+            .background(color = Gray40)
+            .clickable {
+
+                navController.navigate("exerciseActivity")
+            }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

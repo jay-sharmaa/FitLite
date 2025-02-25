@@ -1,8 +1,10 @@
 package com.example.uitutorial.pages
 
 import android.content.Context
-import android.util.Log
+import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +31,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -39,30 +44,92 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.uitutorial.components.RowLayout
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.uitutorial.components.DietLayout
+import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
+import com.example.uitutorial.services.RunningServices
 import com.example.uitutorial.viewModels.HomePageViewModel
-import com.example.uitutorial.viewModels.dataStore
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
+
 @Composable
-fun HomePage(viewModel: HomePageViewModel, context: Context){
+fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier) {
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     Box(
-        modifier = Modifier.fillMaxSize().padding(all = 8.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(all = 8.dp),
         contentAlignment = Alignment.TopCenter,
     ) {
         Column {
-            WeeklyCard(viewModel, context)
-            Spacer(modifier = Modifier.height(10.dp))
-            RowLayout(viewModel)
+            if(currentRoute != "exerciseActivity")
+                WeeklyCard(viewModel, context)
+            if(currentRoute != "exerciseActivity")
+                Spacer(modifier = Modifier.height(10.dp))
+            ExerciseNavigationGraph(navController = navController, modifier)
+            if(currentRoute != "exerciseActivity")
+                Spacer(modifier = Modifier.height(10.dp))
+            if(currentRoute != "exerciseActivity")
+                DietLayout()
         }
     }
 }
 
 @Composable
-fun WeeklyCard(viewModel: HomePageViewModel, context: Context){
+fun PrettyDietCard(
+    dietName: String,
+    dietaryType: String,
+    image: Int,
+) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 10.dp)) {
+        Image(
+            painter = painterResource(id = image),
+            contentDescription = dietName,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                        startY = 300f
+                    )
+                )
+        )
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = dietName,
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = dietaryType,
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+
+@Composable
+fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
 
     val openAlertDialog = remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf("") }
@@ -80,11 +147,17 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context){
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-           horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("Weekly goal", fontWeight = FontWeight.Bold, fontSize = 20.sp)
             Text(buildAnnotatedString {
-                withStyle(style = SpanStyle(color = Color.Blue, fontSize = 24.sp, fontWeight = FontWeight.Bold)) {
+                withStyle(
+                    style = SpanStyle(
+                        color = Color.Blue,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                ) {
                     append(dayWorkOut.toString())
                 }
                 withStyle(style = SpanStyle()) {
@@ -100,7 +173,7 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context){
             )
         }
     }
-    when{
+    when {
         openAlertDialog.value -> {
             AlertDialogExample(
                 setDays = {
@@ -108,7 +181,7 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context){
                 },
                 onDismissRequest = {
                     openAlertDialog.value = false
-                                   },
+                },
                 onConfirmation = {
                     openAlertDialog.value = false
                 },
@@ -125,10 +198,8 @@ fun AlertDialogExample(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
     dialogText: String,
-    context: Context
+    context: Context,
 ) {
-    val DAYS_WORKOUT_KEY = intPreferencesKey("day_workout")
-
     var textFieldValue by remember { mutableStateOf("") }
     AlertDialog(
         title = {
@@ -140,12 +211,15 @@ fun AlertDialogExample(
                 placeholder = {
                     Text(text = "")
                 },
-                value = textFieldValue, 
+                value = textFieldValue,
                 onValueChange = {
-                    if(it.toInt() > 7){
-                        Toast.makeText(context, "Select Appropriate Number Of Days", Toast.LENGTH_SHORT).show()
-                    }
-                    else {
+                    if (it.toInt() > 7) {
+                        Toast.makeText(
+                            context,
+                            "Select Appropriate Number Of Days",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
                         textFieldValue = it
                     }
                 }

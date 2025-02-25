@@ -2,7 +2,10 @@ package com.example.uitutorial
 
 import MyBottomAppBar
 import MyNav
+import android.Manifest
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -55,10 +58,15 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.uitutorial.navigation.BottomScreens
+import com.example.uitutorial.navigationalComponents.ProfileNavigationGraph
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.ProfilePage
 import com.example.uitutorial.pages.SettingsPage
+import com.example.uitutorial.services.RunningServices
 import com.example.uitutorial.ui.theme.Purple80
 import com.example.uitutorial.viewModels.HomePageViewModel
 import com.example.uitutorial.viewModels.HomePageViewModelFactory
@@ -68,8 +76,20 @@ class MainActivity : ComponentActivity() {
     private val homePageViewModel: HomePageViewModel by viewModels {
         HomePageViewModelFactory(applicationContext)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
+        }
+        Intent(this@MainActivity, RunningServices::class.java).also{
+            it.action = RunningServices.Actions.Start.toString()
+            startForegroundService(it)
+        }
         setContent {
             MaterialTheme {
                 Surface(
@@ -85,6 +105,9 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
+    val homeNavController = rememberNavController()
+    val profileNavController = rememberNavController()
+
     val bottomScreens = listOf(
         BottomScreens.Home,
         BottomScreens.Settings,
@@ -101,6 +124,9 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
     val pagerState: PagerState = rememberPagerState (pageCount = {
         bottomScreens.size
     })
+
+    val currentHomeRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
+    val currentProfileRoute = profileNavController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -130,37 +156,46 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
                     }
                 }
             ) },
+
         bottomBar = {
-            Box(
-                modifier = Modifier.navigationBarsPadding().padding(bottom = 15.dp, start = 15.dp, end = 15.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .border(
-                        shape = RoundedCornerShape(20.dp),
-                        width = 0.dp,
-                        color = Color.White
-                    )
-            )
-            {
-                MyBottomAppBar(pagerState = pagerState, scope = scope)
+            if(check(currentHomeRoute, currentProfileRoute)){
+                Box(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(bottom = 15.dp, start = 15.dp, end = 15.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .border(
+                            shape = RoundedCornerShape(20.dp),
+                            width = 0.dp,
+                            color = Color.White
+                        )
+                )
+                {
+                    MyBottomAppBar(pagerState = pagerState, scope = scope)
+                }
             }
         }
         ){padding ->
         Box(
             contentAlignment = Alignment.TopCenter
         ) {
-            HorizontalPager(modifier = Modifier.padding(padding), state = pagerState) { page ->
+            HorizontalPager(modifier = Modifier.padding(padding), state = pagerState, userScrollEnabled = currentHomeRoute != "exerciseActivity") { page ->
                 when (page) {
-                    0 -> HomePage(homePageViewModel, context)
+                    0 -> HomePage(homePageViewModel, context, homeNavController, Modifier.padding(8.dp))
                     1 -> SettingsPage()
-                    2 -> ProfilePage()
+                    2 -> ProfileNavigationGraph(profileNavController, modifier = Modifier)
                 }
             }
         }
     }
-
     if (active) {
         MySearchBar(onClose = { active = false })
     }
+}
+
+fun check(currentHomeRoute: String?, currentProfileRoute: String?): Boolean{
+    return currentHomeRoute != "exerciseActivity" && currentProfileRoute != "workoutSettings" && currentProfileRoute != "generalSettings"
+            && currentProfileRoute != "voiceFeedback" && currentProfileRoute != "syncWatch" && currentProfileRoute != "syncSpotify"
 }
 
 
