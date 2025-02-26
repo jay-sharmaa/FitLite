@@ -48,8 +48,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -131,6 +133,8 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
+            if((currentHomeRoute == "exerciseLayout" && currentProfileRoute == null) || (currentProfileRoute == "profileLayout" && currentHomeRoute == null) ||
+                (currentHomeRoute == "exerciseLayout" && currentProfileRoute == "profileLayout"))
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 title = {
@@ -179,7 +183,11 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
         Box(
             contentAlignment = Alignment.TopCenter
         ) {
-            HorizontalPager(modifier = Modifier.padding(padding), state = pagerState, userScrollEnabled = currentHomeRoute != "exerciseActivity") { page ->
+            if(currentHomeRoute != null && currentProfileRoute != null){
+                Log.d("BottomScreen", currentHomeRoute)
+                Log.d("BottomScreen", currentProfileRoute)
+            }
+            HorizontalPager(modifier = Modifier.padding(padding), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
                 when (page) {
                     0 -> HomePage(homePageViewModel, context, homeNavController, Modifier.padding(8.dp))
                     1 -> SettingsPage()
@@ -189,24 +197,33 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
         }
     }
     if (active) {
+
         MySearchBar(onClose = { active = false })
     }
 }
 
 fun check(currentHomeRoute: String?, currentProfileRoute: String?): Boolean{
-    return currentHomeRoute != "exerciseActivity" && currentProfileRoute != "workoutSettings" && currentProfileRoute != "generalSettings"
-            && currentProfileRoute != "voiceFeedback" && currentProfileRoute != "syncWatch" && currentProfileRoute != "syncSpotify"
+    if(currentHomeRoute != null)
+    Log.d("BottomScreen", currentHomeRoute)
+    return (currentHomeRoute == "exerciseLayout" && currentProfileRoute == null) || (currentProfileRoute == "profileLayout" && currentHomeRoute == null) ||
+            (currentHomeRoute == "exerciseLayout" && currentProfileRoute == "profileLayout")
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MySearchBar(onClose: ()->Unit) {
+fun MySearchBar(onClose: () -> Unit) {
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(true) }
-    val items = rememberSaveable {
+
+    val items = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) {
         mutableStateListOf("Android developer", "Flutter developer")
     }
+
     SearchBar(
         modifier = Modifier.fillMaxWidth(),
         query = text,
@@ -219,8 +236,10 @@ fun MySearchBar(onClose: ()->Unit) {
             onClose()
         },
         active = active,
-        onActiveChange = { active = it
-            if(!active) onClose()},
+        onActiveChange = {
+            active = it
+            if (!active) onClose()
+        },
         placeholder = { Text("Search...") },
         leadingIcon = {
             Icon(imageVector = Icons.Default.Search, contentDescription = "Search")

@@ -3,6 +3,7 @@ package com.example.uitutorial.components
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -111,7 +112,7 @@ fun ExerciseActivity(navController: NavHostController, modifier: Modifier) {
                     "Warrior II Pose" to "12 minutes"
                 )
             ) { (title, duration) ->
-                ExerciseCard(title, duration, R.drawable.ic_launcher_foreground)
+                ExerciseCard(title, duration, R.drawable.ic_launcher_foreground, navController)
             }
         }
     }
@@ -182,7 +183,7 @@ fun Chip(text: String, icon: ImageVector) {
 }
 
 @Composable
-fun ExerciseCard(title: String, duration: String, imageRes: Int) {
+fun ExerciseCard(title: String, duration: String, imageRes: Int, navController: NavHostController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -197,6 +198,9 @@ fun ExerciseCard(title: String, duration: String, imageRes: Int) {
                 modifier = Modifier
                     .size(60.dp)
                     .clip(RoundedCornerShape(8.dp))
+                    .clickable {
+                        navController.navigate("form3DModel")
+                    }
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {

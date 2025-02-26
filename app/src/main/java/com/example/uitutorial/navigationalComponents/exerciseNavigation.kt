@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.uitutorial.ModelRender.FilamentComposeView
 import com.example.uitutorial.components.ExerciseActivity
 import com.example.uitutorial.components.Exerciselayout
 
@@ -13,5 +14,6 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
     NavHost(navController = navController, startDestination = "exerciseLayout") {
         composable("exerciseLayout") { Exerciselayout(navController) }
         composable("exerciseActivity") { ExerciseActivity(navController, modifier) }
+        composable("form3DModel") { FilamentComposeView() }
     }
 }

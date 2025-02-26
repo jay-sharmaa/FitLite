@@ -65,14 +65,14 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
         contentAlignment = Alignment.TopCenter,
     ) {
         Column {
-            if(currentRoute != "exerciseActivity")
+            if(currentRoute != "exerciseActivity" && currentRoute != "form3DModel")
                 WeeklyCard(viewModel, context)
-            if(currentRoute != "exerciseActivity")
+            if(currentRoute != "exerciseActivity" && currentRoute != "form3DModel")
                 Spacer(modifier = Modifier.height(10.dp))
             ExerciseNavigationGraph(navController = navController, modifier)
-            if(currentRoute != "exerciseActivity")
+            if(currentRoute != "exerciseActivity" && currentRoute != "form3DModel")
                 Spacer(modifier = Modifier.height(10.dp))
-            if(currentRoute != "exerciseActivity")
+            if(currentRoute != "exerciseActivity" && currentRoute != "form3DModel")
                 DietLayout()
         }
     }
