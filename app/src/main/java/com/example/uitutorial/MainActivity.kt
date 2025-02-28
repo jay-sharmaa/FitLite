@@ -134,33 +134,34 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             if((currentHomeRoute == "exerciseLayout" && currentProfileRoute == null) || (currentProfileRoute == "profileLayout" && currentHomeRoute == null) ||
-                (currentHomeRoute == "exerciseLayout" && currentProfileRoute == "profileLayout"))
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                title = {
-                    Text(
-                        text = "FitLite",
-                        fontStyle = FontStyle.Normal,
-                        fontSize = 32.sp,
-                        color = Color.Black
-                    ) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Purple80,
-                    titleContentColor = Color.White
-                ),
-                actions = {
-                    if (!active) {
-                        IconButton(onClick = { active = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Search",
-                                tint = Color.Black
-                            )
+                (currentHomeRoute == "exerciseLayout" && currentProfileRoute == "profileLayout")){
+                TopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    title = {
+                        Text(
+                            text = "FitLite",
+                            fontStyle = FontStyle.Normal,
+                            fontSize = 32.sp,
+                            color = Color.Black
+                        ) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Purple80,
+                        titleContentColor = Color.White
+                    ),
+                    actions = {
+                        if (!active) {
+                            IconButton(onClick = { active = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = Color.Black
+                                )
+                            }
                         }
                     }
-                }
-            ) },
-
+                )
+            }
+        },
         bottomBar = {
             if(check(currentHomeRoute, currentProfileRoute)){
                 Box(

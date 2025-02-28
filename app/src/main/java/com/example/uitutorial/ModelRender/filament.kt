@@ -5,15 +5,25 @@ import android.util.Log
 import android.view.Choreographer
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.filament.*
 import com.google.android.filament.gltfio.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import com.google.android.filament.gltfio.UbershaderLoader
+import kotlin.math.pow
 
 class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callback, Choreographer.FrameCallback{
     private lateinit var engine: Engine
@@ -31,6 +41,8 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
     private var choreographer: Choreographer? = null
     private var initialized = false
     private var rotationAngle: Float = 0f
+    private var rotationX: Float = 0f
+    private var rotationY: Float = 0f
 
     private val TAG = "FilamentView"
 
@@ -40,7 +52,7 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
         System.loadLibrary("gltfio-jni")
     }
 
-    private fun rotateModel(angleDegrees: Float) {
+    private fun rotateModel(angleDegrees: Float, X: Float, Y: Float) {
         filamentAsset?.let { asset ->
             val transformManager = engine.transformManager
             val root = asset.root
@@ -48,7 +60,7 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
 
             if (transformInstance != 0) {
                 val rotationMatrix = FloatArray(16)
-                android.opengl.Matrix.setRotateM(rotationMatrix, 0, angleDegrees, 1f, 1f, 0f) // Rotate around Y-axis
+                android.opengl.Matrix.setRotateM(rotationMatrix, 0, angleDegrees, Y, X, 0f) // Rotate around Y-axis
 
                 transformManager.setTransform(transformInstance, rotationMatrix)
             }
@@ -133,8 +145,7 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
 
     override fun doFrame(frameTimeNanos: Long) {
         if (initialized) {
-            rotationAngle += 0.1f
-            rotateModel(rotationAngle)
+            rotateModel(rotationAngle, rotationX, rotationY)
 
             if (filamentAsset != null) {
                 Log.d(TAG, "GLB model resources are still loading")
@@ -145,16 +156,54 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
                 renderer.endFrame()
             }
             choreographer?.postFrameCallback(this)
-            scene.skybox = Skybox.Builder().color(0.0f, 0.0f, 0.0f, 1.0f).build(engine)
+            scene.skybox = Skybox.Builder().color(1.0f, 1.0f, 1.0f, 1.0f).build(engine)
 
         }
+    }
+    fun setRotationAngle(angleX: Float, angleY: Float){
+        val temp = angleX.toDouble().pow(2.0) + angleY.toDouble().pow(2.0)
+        rotationAngle = temp.pow(0.5).toFloat()
+        rotationX = angleX
+        rotationY = angleY
     }
 }
 
 @Composable
 fun FilamentComposeView() {
-    AndroidView(
-        factory = { context -> FilamentView(context) },
+    var rotationX by remember { mutableStateOf(0f) }
+    var rotationY by remember { mutableStateOf(0f) }
+    val filamentView = remember { mutableStateOf<FilamentView?>(null) }
+
+    Column(
         modifier = Modifier.fillMaxSize()
-    )
+    ) {
+        AndroidView(
+            factory = { context ->
+                FilamentView(context).also {
+                    filamentView.value = it
+                }
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        rotationX += dragAmount.x * 0.5f
+                        rotationY += dragAmount.y * 0.5f
+                        filamentView.value?.setRotationAngle(
+                            rotationX,
+                            rotationY
+                        )
+                    }
+                }
+        )
+        Button(
+            onClick = {
+                rotationY = 0f
+                rotationX = 0f
+            }
+        ){
+            Text("ReOrient")
+        }
+    }
 }
