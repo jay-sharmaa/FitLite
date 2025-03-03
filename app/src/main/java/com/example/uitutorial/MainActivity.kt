@@ -29,6 +29,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,6 +62,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.uitutorial.navigation.BottomScreens
@@ -87,10 +89,6 @@ class MainActivity : ComponentActivity() {
                 arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                 0
             )
-        }
-        Intent(this@MainActivity, RunningServices::class.java).also{
-            it.action = RunningServices.Actions.Start.toString()
-            startForegroundService(it)
         }
         setContent {
             MaterialTheme {
@@ -158,6 +156,18 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
                                 )
                             }
                         }
+                        IconButton(onClick = {
+                            val intent = Intent(context, RunningServices::class.java).apply {
+                                action = RunningServices.Actions.Start.toString()
+                            }
+                            startForegroundService(context, intent)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.MusicNote,
+                                contentDescription = "Search",
+                                tint = Color.Black
+                            )
+                        }
                     }
                 )
             }
@@ -184,10 +194,6 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
         Box(
             contentAlignment = Alignment.TopCenter
         ) {
-            if(currentHomeRoute != null && currentProfileRoute != null){
-                Log.d("BottomScreen", currentHomeRoute)
-                Log.d("BottomScreen", currentProfileRoute)
-            }
             HorizontalPager(modifier = Modifier.padding(padding), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
                 when (page) {
                     0 -> HomePage(homePageViewModel, context, homeNavController, Modifier.padding(8.dp))
@@ -204,8 +210,7 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
 }
 
 fun check(currentHomeRoute: String?, currentProfileRoute: String?): Boolean{
-    if(currentHomeRoute != null)
-    Log.d("BottomScreen", currentHomeRoute)
+
     return (currentHomeRoute == "exerciseLayout" && currentProfileRoute == null) || (currentProfileRoute == "profileLayout" && currentHomeRoute == null) ||
             (currentHomeRoute == "exerciseLayout" && currentProfileRoute == "profileLayout")
 }
