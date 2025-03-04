@@ -47,6 +47,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.uitutorial.components.DietLayout
+import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
 import com.example.uitutorial.services.RunningServices
 import com.example.uitutorial.viewModels.HomePageViewModel
@@ -56,7 +57,7 @@ val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
 
 @Composable
-fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier) {
+fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel) {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     Box(
         modifier = Modifier

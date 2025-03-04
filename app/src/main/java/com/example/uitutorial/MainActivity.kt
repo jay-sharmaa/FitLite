@@ -65,11 +65,15 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.startForegroundService
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.uitutorial.data.PersonScreen
+import com.example.uitutorial.data.PersonViewModel
+import com.example.uitutorial.data.ViewModelFactory
 import com.example.uitutorial.navigation.BottomScreens
 import com.example.uitutorial.navigationalComponents.ProfileNavigationGraph
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.ProfilePage
 import com.example.uitutorial.pages.SettingsPage
+import com.example.uitutorial.services.RunningApp
 import com.example.uitutorial.services.RunningServices
 import com.example.uitutorial.ui.theme.Purple80
 import com.example.uitutorial.viewModels.HomePageViewModel
@@ -79,6 +83,10 @@ import com.example.uitutorial.viewModels.HomePageViewModelFactory
 class MainActivity : ComponentActivity() {
     private val homePageViewModel: HomePageViewModel by viewModels {
         HomePageViewModelFactory(applicationContext)
+    }
+
+    private val authViewModel: PersonViewModel by viewModels {
+        ViewModelFactory((application as RunningApp).repository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,7 +103,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     shadowElevation = 20.dp
                 ) {
-                    MyNav(homePageViewModel = homePageViewModel, context = applicationContext)
+                    MyNav(homePageViewModel = homePageViewModel, context = applicationContext, authViewModel = authViewModel)
                 }
             }
         }
@@ -104,7 +112,8 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
+fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authViewModel: PersonViewModel, userName: String) {
+    Log.d("MainScreen", userName)
     val homeNavController = rememberNavController()
     val profileNavController = rememberNavController()
 
@@ -196,9 +205,9 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context) {
         ) {
             HorizontalPager(modifier = Modifier.padding(padding), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
                 when (page) {
-                    0 -> HomePage(homePageViewModel, context, homeNavController, Modifier.padding(8.dp))
-                    1 -> SettingsPage()
-                    2 -> ProfileNavigationGraph(profileNavController, modifier = Modifier)
+                    0 -> HomePage(homePageViewModel, context, homeNavController, Modifier.padding(8.dp), authViewModel)
+                    1 -> SettingsPage(authViewModel)
+                    2 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
                 }
             }
         }

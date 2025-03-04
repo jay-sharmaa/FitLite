@@ -13,12 +13,13 @@ import com.example.uitutorial.components.SyncSpotify
 import com.example.uitutorial.components.SyncWatch
 import com.example.uitutorial.components.VoiceFeedback
 import com.example.uitutorial.components.WorkoutSettings
+import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.pages.ProfilePage
 
 @Composable
-fun ProfileNavigationGraph(navController: NavHostController, modifier: Modifier) {
+fun ProfileNavigationGraph(navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel, userName: String) {
     NavHost(navController = navController, startDestination = "profileLayout") {
-        composable("profileLayout") { ProfilePage(navController)}
+        composable("profileLayout") { ProfilePage(navController, authViewModel, userName)}
         composable("workoutSettings") { WorkoutSettings() }
         composable("generalSettings") { GeneralSettings() }
         composable("voiceFeedback") { VoiceFeedback() }

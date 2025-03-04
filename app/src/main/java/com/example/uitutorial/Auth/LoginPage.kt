@@ -1,3 +1,5 @@
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,11 +14,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.uitutorial.data.Person
+import com.example.uitutorial.data.PersonViewModel
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginPage(navController : NavController) {
+fun LoginPage(navController : NavController, authViewModel: PersonViewModel, context: Context) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -81,11 +87,28 @@ fun LoginPage(navController : NavController) {
 
                 Button(
                     onClick = {
+                        var personName: String? = null
+                        var personPassword: String? = null
                         scope.launch {
-                            signIn(emailState.value, passwordState.value)
-                        }
-                        navController.navigate("mainScreen"){
-                            popUpTo("login"){inclusive = true}
+                            personName = authViewModel.getPersonByName(emailState.value)
+                                .map{ it?.name }
+                                .firstOrNull()
+                            personPassword = authViewModel.getPersonByName(emailState.value)
+                                .map{ it?.password }
+                                .firstOrNull()
+                            if(personName != null){
+                                if(personName == emailState.value && personPassword == passwordState.value){
+                                    navController.navigate("mainScreen/${personName}"){
+                                        popUpTo("login"){inclusive = true}
+                                    }
+                                }
+                                else{
+                                    Toast.makeText(context, "Wrong Email or Password", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            else{
+                                Toast.makeText(context, "User Does Not Exist", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -116,8 +139,4 @@ fun LoginPage(navController : NavController) {
             }
         }
     }
-}
-
-suspend fun signIn(email: String, password: String) {
-
 }

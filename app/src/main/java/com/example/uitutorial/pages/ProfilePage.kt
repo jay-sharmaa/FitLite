@@ -1,9 +1,9 @@
 package com.example.uitutorial.pages
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,12 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +38,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -49,11 +47,27 @@ import androidx.navigation.NavHostController
 import com.example.uitutorial.R
 import com.example.uitutorial.components.WorkoutSettingTile
 import com.example.uitutorial.components.WorkoutSettings
+import com.example.uitutorial.data.PersonViewModel
+import kotlinx.coroutines.AbstractCoroutine
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+
+
+suspend fun loadProgress(updateProgress: (Float) -> Unit) {
+    for (i in 1..100) {
+        updateProgress(i.toFloat() / 100)
+        delay(3)
+    }
+}
+
 @Composable
-fun ProfilePage(navController: NavHostController) {
+fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel, userName: String) {
     var currentProgress by remember { mutableStateOf(0f) }
     var loading by remember { mutableStateOf(true) }
+    val coroutine = rememberCoroutineScope()
 
     LaunchedEffect(Unit){
         loadProgress {progress ->
@@ -77,7 +91,6 @@ fun ProfilePage(navController: NavHostController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(bottomRoundedShape(100.dp))
-
             )
             Image(
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
@@ -89,12 +102,14 @@ fun ProfilePage(navController: NavHostController) {
                     .size(120.dp)
                     .align(Alignment.BottomCenter)
             )
+            Text(userName, modifier = Modifier.align(Alignment.BottomCenter), style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black))
             CircularProgressIndicator(progress = currentProgress,
                 modifier = Modifier
                     .size(130.dp)
                     .align(Alignment.BottomCenter),
                 strokeWidth = 5.dp)
         }
+
         ProfileSettingTile(title = "Workout Settings", navController, "workoutSettings")
         Divider()
         ProfileSettingTile(title = "General Settings", navController, "generalSettings")
@@ -119,14 +134,6 @@ fun ProfileSettingTile(title: String, navController: NavHostController, route : 
     ) {
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = title, fontSize = 20.sp)
-    }
-}
-
-
-suspend fun loadProgress(updateProgress: (Float) -> Unit) {
-    for (i in 1..100) {
-        updateProgress(i.toFloat() / 100)
-        delay(3)
     }
 }
 

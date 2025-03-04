@@ -5,6 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import com.example.uitutorial.data.AppDatabase
+import com.example.uitutorial.data.PersonRepository
 
 class RunningApp: Application() {
     override fun onCreate() {
@@ -19,4 +21,7 @@ class RunningApp: Application() {
             notificationManager.createNotificationChannel(channel)
         }
     }
+
+    val database by lazy { AppDatabase.getDatabase(this) }
+    val repository by lazy { PersonRepository(database.personDao()) }
 }

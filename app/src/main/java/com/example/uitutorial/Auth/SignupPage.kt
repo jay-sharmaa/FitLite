@@ -1,3 +1,5 @@
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,15 +12,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.uitutorial.data.Person
+import com.example.uitutorial.data.PersonViewModel
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpPage(navController: NavController) {
+fun SignUpPage(navController: NavController, authViewModel: PersonViewModel, context: Context) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val confirmPasswordState = remember { mutableStateOf("") }
@@ -98,11 +105,23 @@ fun SignUpPage(navController: NavController) {
 
                 Button(
                     onClick = {
+                        var personName: String? = null
+
                         scope.launch {
-                            signUp(emailState.value, passwordState.value)
+                            personName = authViewModel.getPersonByName(emailState.value)
+                                .map{ it?.name}
+                                .firstOrNull()
                         }
-                        navController.navigate("mainScreen"){
-                            popUpTo("signup"){inclusive = true}
+
+                        if(personName == null){
+                            val newPerson = Person(emailState.value, passwordState.value, 25, 'F', 1, 0, emptyList())
+                            authViewModel.insert(newPerson)
+                            navController.navigate("mainScreen/${personName}"){
+                                popUpTo("signup"){inclusive = true}
+                            }
+                        }
+                        else{
+                            Toast.makeText(context, "Email Already Exists",Toast.LENGTH_LONG).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -135,8 +154,4 @@ fun SignUpPage(navController: NavController) {
             }
         }
     }
-}
-
-suspend fun signUp(email: String, password: String) {
-
 }
