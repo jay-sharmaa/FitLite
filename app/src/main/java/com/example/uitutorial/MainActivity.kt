@@ -129,8 +129,8 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
 
     val bottomScreens = listOf(
         BottomScreens.Home,
-        BottomScreens.Settings,
         BottomScreens.Profile,
+        BottomScreens.Settings,
     )
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -260,14 +260,13 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
             HorizontalPager(modifier = Modifier.padding(padding), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
                 when (page) {
                     0 -> HomePage(homePageViewModel, context, homeNavController, Modifier.padding(8.dp), authViewModel)
-                    1 -> SettingsPage(authViewModel)
-                    2 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
+                    1 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
+                    2 -> SettingsPage(authViewModel)
                 }
             }
         }
     }
     if (active) {
-
         MySearchBar(onClose = { active = false })
     }
 }

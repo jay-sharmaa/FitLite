@@ -92,13 +92,13 @@ fun MyBottomAppBar(
                             .padding(8.dp), contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Person",
                             tint = Color.White
                         )
                     }
                 },
-                label = { Text("Profile") },
+                label = { Text("Person") },
                 selected = pagerState.currentPage == 1,
                 onClick = {
                     scope.launch {
@@ -126,8 +126,8 @@ fun MyBottomAppBar(
                             .padding(8.dp), contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Person",
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
                             tint = Color.White
                         )
                     }

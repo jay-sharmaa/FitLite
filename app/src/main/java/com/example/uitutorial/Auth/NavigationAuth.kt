@@ -36,8 +36,10 @@ fun MyNav(homePageViewModel: HomePageViewModel, context : Context, authViewModel
     val startDestination = if (user.isNotEmpty()) "mainScreen/$user" else "login"
 
     NavHost(navController = navController, startDestination = startDestination) {
-        composable("login") { LoginPage(navController, authViewModel, context, user) }
-        composable("signup") { SignUpPage(navController, authViewModel, context) }
+        if(user == ""){
+            composable("login") { LoginPage(navController, authViewModel, context, user) }
+            composable("signup") { SignUpPage(navController, authViewModel, context) }
+        }
         composable("mainScreen/{userName}") {
                 backStackEntry ->
             val userName = backStackEntry.arguments?.getString("userName")
