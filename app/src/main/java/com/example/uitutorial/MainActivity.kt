@@ -1,7 +1,7 @@
 package com.example.uitutorial
 
 import MyBottomAppBar
-import MyNav
+import com.example.uitutorial.Auth.MyNav
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,10 +41,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -63,22 +66,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.startForegroundService
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.uitutorial.data.PersonScreen
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.data.ViewModelFactory
 import com.example.uitutorial.navigation.BottomScreens
 import com.example.uitutorial.navigationalComponents.ProfileNavigationGraph
 import com.example.uitutorial.pages.HomePage
-import com.example.uitutorial.pages.ProfilePage
 import com.example.uitutorial.pages.SettingsPage
 import com.example.uitutorial.services.RunningApp
 import com.example.uitutorial.services.RunningServices
 import com.example.uitutorial.ui.theme.Purple80
 import com.example.uitutorial.viewModels.HomePageViewModel
 import com.example.uitutorial.viewModels.HomePageViewModelFactory
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
+val Context.myDataStore by preferencesDataStore(name = "user_info")
 
 class MainActivity : ComponentActivity() {
     private val homePageViewModel: HomePageViewModel by viewModels {
@@ -116,6 +124,8 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
     Log.d("MainScreen", userName)
     val homeNavController = rememberNavController()
     val profileNavController = rememberNavController()
+    var openAlertDialog by remember { mutableStateOf("") }
+    val coroutine = rememberCoroutineScope()
 
     val bottomScreens = listOf(
         BottomScreens.Home,
@@ -136,6 +146,50 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
 
     val currentHomeRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
     val currentProfileRoute = profileNavController.currentBackStackEntryAsState().value?.destination?.route
+
+    val SAVE_LOGIN_INFO = stringPreferencesKey("login_info")
+
+    LaunchedEffect(Unit){
+        context.myDataStore.data
+            .map { preferences -> preferences[SAVE_LOGIN_INFO] ?: "" }
+            .collect { value ->
+                openAlertDialog = value
+            }
+    }
+
+    if(openAlertDialog.isEmpty()){
+        AlertDialog(
+            title = {
+                    Text(text = "Save Info")
+            },
+            onDismissRequest = {
+                openAlertDialog = ""
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        openAlertDialog = userName
+                        coroutine.launch {
+                            context.myDataStore.edit {preferences ->
+                                preferences[SAVE_LOGIN_INFO] = userName
+                            }
+                        }
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        openAlertDialog = ""
+                    }
+                ) {
+                    Text("Never")
+                }
+            }
+        )
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

@@ -45,16 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.uitutorial.R
-import com.example.uitutorial.components.WorkoutSettingTile
-import com.example.uitutorial.components.WorkoutSettings
 import com.example.uitutorial.data.PersonViewModel
-import kotlinx.coroutines.AbstractCoroutine
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-
 
 suspend fun loadProgress(updateProgress: (Float) -> Unit) {
     for (i in 1..100) {
@@ -74,6 +66,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel
             currentProgress = progress
         }
         loading = false
+        Log.d("Profile", userName)
     }
 
     Column(

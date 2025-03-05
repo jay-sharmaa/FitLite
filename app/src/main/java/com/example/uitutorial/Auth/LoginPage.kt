@@ -1,10 +1,12 @@
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -16,16 +18,27 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.uitutorial.data.Person
 import com.example.uitutorial.data.PersonViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginPage(navController : NavController, authViewModel: PersonViewModel, context: Context) {
+fun LoginPage(navController : NavController, authViewModel: PersonViewModel, context: Context, user: String) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+
+    Log.d("LoginPage", user.length.toString())
+    Log.d("LoginPage", user)
+    LaunchedEffect(Unit){
+        if(user.isNotEmpty()){
+            navController.navigate("mainScreen/${user}"){
+                popUpTo("login"){inclusive = true}
+            }
+        }
+    }
 
     Box(
         modifier = Modifier

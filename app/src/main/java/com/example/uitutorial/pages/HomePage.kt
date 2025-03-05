@@ -168,7 +168,6 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
                 modifier = Modifier.clickable {
                     scope.launch {
                         openAlertDialog.value = true
-
                     }
                 }
             )
