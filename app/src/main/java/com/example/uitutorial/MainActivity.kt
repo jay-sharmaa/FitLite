@@ -86,7 +86,7 @@ import com.example.uitutorial.viewModels.HomePageViewModelFactory
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-val Context.myDataStore by preferencesDataStore(name = "user_info")
+val Context.myDataStore by preferencesDataStore(name =  "user_info")
 
 class MainActivity : ComponentActivity() {
     private val homePageViewModel: HomePageViewModel by viewModels {
