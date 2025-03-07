@@ -5,6 +5,7 @@ import com.example.uitutorial.Auth.MyNav
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -65,6 +66,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startForegroundService
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -99,6 +101,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if(!requestPermission()){
+            ActivityCompat.requestPermissions(
+                this, CAMERAX_PERMISSIONS, 0
+            )
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(
                 this,
@@ -115,6 +122,21 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun requestPermission(): Boolean{
+        return CAMERAX_PERMISSIONS.all{
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                it
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    companion object {
+        private val CAMERAX_PERMISSIONS = arrayOf(
+            Manifest.permission.CAMERA
+        )
     }
 }
 
