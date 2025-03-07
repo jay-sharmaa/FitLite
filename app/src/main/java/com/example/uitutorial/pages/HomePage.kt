@@ -2,6 +2,7 @@ package com.example.uitutorial.pages
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -66,14 +67,15 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
         contentAlignment = Alignment.TopCenter,
     ) {
         Column {
-            if(currentRoute != "exerciseActivity" && currentRoute != "form3DModel")
+            Log.d("Where is Waldo", currentRoute.toString())
+            if(currentRoute == "exerciseLayout")
                 WeeklyCard(viewModel, context)
-            if(currentRoute != "exerciseActivity" && currentRoute != "form3DModel")
+            if(currentRoute == "exerciseLayout")
                 Spacer(modifier = Modifier.height(10.dp))
             ExerciseNavigationGraph(navController = navController, modifier)
-            if(currentRoute != "exerciseActivity" && currentRoute != "form3DModel")
+            if(currentRoute == "exerciseLayout")
                 Spacer(modifier = Modifier.height(10.dp))
-            if(currentRoute != "exerciseActivity" && currentRoute != "form3DModel")
+            if(currentRoute == "exerciseLayout")
                 DietLayout()
         }
     }

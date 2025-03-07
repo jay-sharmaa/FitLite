@@ -1,5 +1,6 @@
 package com.example.uitutorial.navigationalComponents
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -15,5 +16,8 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
         composable("exerciseLayout") { Exerciselayout(navController) }
         composable("exerciseActivity") { ExerciseActivity(navController, modifier) }
         composable("form3DModel") { FilamentComposeView() }
+        composable("poseCheck") {
+            Log.d("NotHere", "pass")
+            PoseCheck() }
     }
 }

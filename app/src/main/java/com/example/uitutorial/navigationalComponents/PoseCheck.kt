@@ -1,8 +1,11 @@
 package com.example.uitutorial.navigationalComponents
 
+import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.core.ImageCaptureException
@@ -24,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,48 +39,67 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.uitutorial.MainActivity
 import com.example.uitutorial.viewModels.CameraMediapipeViewModel
+import com.example.uitutorial.viewModels.CameraPermissionViewModel
 
 
 @Composable
-fun PoseCheck(){
-    val scope = rememberCoroutineScope()
-    val currentContext = LocalContext.current
-    val controller = remember {
-        LifecycleCameraController(currentContext).apply {
-            setEnabledUseCases(
-                CameraController.IMAGE_CAPTURE
-            )
+fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel()){
+    val hasPermission by viewPermissionModel.hasPermission.collectAsState(initial = false)
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission())
+    {
+        viewPermissionModel.updatePermissionState()
+    }
+
+    LaunchedEffect(Unit){
+        if(!hasPermission){
+            permissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
-    val viewModel = viewModel<CameraMediapipeViewModel>()
-    val bitmaps by viewModel.bitmaps.collectAsState()
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ){
-        CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
-        IconButton(onClick = {
-            controller.cameraSelector = if(controller.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA){
-                CameraSelector.DEFAULT_FRONT_CAMERA
-            }else{
-                CameraSelector.DEFAULT_BACK_CAMERA
+
+    if(hasPermission){
+        val scope = rememberCoroutineScope()
+        val currentContext = LocalContext.current
+        val controller = remember {
+            LifecycleCameraController(currentContext).apply {
+                setEnabledUseCases(
+                    CameraController.IMAGE_CAPTURE
+                )
             }
-        }) {
-            Icon(imageVector = Icons.Default.Cameraswitch, contentDescription = "CameraSwitch", modifier = Modifier.padding(8.dp))
         }
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
+        val viewModel = viewModel<CameraMediapipeViewModel>()
+        val bitmaps by viewModel.bitmaps.collectAsState()
+        Box(
+            modifier = Modifier.fillMaxSize()
         ){
+            CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
             IconButton(onClick = {
-                takePhoto(controller, viewModel::onTakePhoto, currentContext)
+                controller.cameraSelector = if(controller.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA){
+                    CameraSelector.DEFAULT_FRONT_CAMERA
+                }else{
+                    CameraSelector.DEFAULT_BACK_CAMERA
+                }
             }) {
-                Icon(imageVector = Icons.Default.Camera, contentDescription = "take picture")
+                Icon(imageVector = Icons.Default.Cameraswitch, contentDescription = "CameraSwitch", modifier = Modifier.padding(8.dp))
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
+            ){
+                IconButton(onClick = {
+                    takePhoto(controller, viewModel::onTakePhoto, currentContext)
+                }) {
+                    Icon(imageVector = Icons.Default.Camera, contentDescription = "take picture")
+                }
             }
         }
     }

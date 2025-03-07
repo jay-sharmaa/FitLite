@@ -156,7 +156,7 @@ fun ExerciseActivity(navController: NavHostController, modifier: Modifier) {
                 Button(
                     onClick = {
                         showBottomSheet = false
-                        // Start Workout Logic Here
+                        navController.navigate(route = "poseCheck")
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
