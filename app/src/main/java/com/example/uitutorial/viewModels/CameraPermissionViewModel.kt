@@ -32,7 +32,7 @@ class CameraPermissionViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
-    fun updatePermissionState(){
+    fun updatePermissionState() {
         _hasPermission.value = checkPermission()
     }
 }

@@ -53,7 +53,7 @@ class RunningServices : Service() {
     }
 
     private fun pause() {
-        // Handle pause logic here (e.g., pause tracking)
+
     }
 
     enum class Actions {

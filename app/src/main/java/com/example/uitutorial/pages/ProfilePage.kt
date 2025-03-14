@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,7 +57,7 @@ suspend fun loadProgress(updateProgress: (Float) -> Unit) {
 }
 
 @Composable
-fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel, userName: String) {
+fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel, userName: String, modifier: Modifier) {
     var currentProgress by remember { mutableStateOf(0f) }
     var loading by remember { mutableStateOf(true) }
     val coroutine = rememberCoroutineScope()
@@ -70,7 +71,9 @@ fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel
     }
 
     Column(
-        modifier = Modifier.verticalScroll(rememberScrollState())
+        modifier = modifier
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
     ){
         Box(
             modifier = Modifier

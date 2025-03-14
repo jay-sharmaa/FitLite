@@ -1,7 +1,6 @@
 package com.example.uitutorial.pages
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -16,6 +15,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
@@ -32,6 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -43,14 +46,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.uitutorial.components.DietLayout
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
-import com.example.uitutorial.services.RunningServices
+import com.example.uitutorial.ui.theme.Purple80
 import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
 
@@ -135,7 +137,6 @@ fun PrettyDietCard(
 fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
 
     val openAlertDialog = remember { mutableStateOf(false) }
-    var textFieldValue by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
     val dayWorkOut by viewModel.daysWorkout.collectAsState()
@@ -174,6 +175,8 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
                 }
             )
         }
+        Spacer(modifier = Modifier.height(20.dp))
+        CircleChip(Modifier.fillMaxWidth())
     }
     when {
         openAlertDialog.value -> {
@@ -190,6 +193,34 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
                 dialogText = "Set your weekly goal",
                 context = context
             )
+        }
+    }
+}
+
+@Composable
+fun CircleChip(modifier: Modifier) {
+    var backgroundColor: Color = Purple80
+    val days = arrayOf("Sun", "Mon", "Tue", "Wed", "Thr", "Fri", "Sat")
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ){
+        items(days.size){
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(35.dp))
+                    .background(
+                        color = backgroundColor
+                    )
+            ){
+                Box(
+                    modifier = Modifier
+                        .size(width = 50.dp,
+                            height = 50.dp)
+                ){
+                    Text(days[it], modifier = Modifier.align(alignment = Alignment.Center))
+                }
+            }
         }
     }
 }

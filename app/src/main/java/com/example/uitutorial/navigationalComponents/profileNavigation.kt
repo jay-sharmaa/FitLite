@@ -19,7 +19,7 @@ import com.example.uitutorial.pages.ProfilePage
 @Composable
 fun ProfileNavigationGraph(navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel, userName: String) {
     NavHost(navController = navController, startDestination = "profileLayout") {
-        composable("profileLayout") { ProfilePage(navController, authViewModel, userName)}
+        composable("profileLayout") { ProfilePage(navController, authViewModel, userName, modifier)}
         composable("workoutSettings") { WorkoutSettings() }
         composable("generalSettings") { GeneralSettings() }
         composable("voiceFeedback") { VoiceFeedback() }

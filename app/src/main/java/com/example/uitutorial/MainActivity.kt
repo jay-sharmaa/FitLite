@@ -16,6 +16,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -77,6 +78,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.data.ViewModelFactory
 import com.example.uitutorial.navigation.BottomScreens
+import com.example.uitutorial.navigationalComponents.PoseCheck
 import com.example.uitutorial.navigationalComponents.ProfileNavigationGraph
 import com.example.uitutorial.pages.HomePage
 import com.example.uitutorial.pages.SettingsPage
@@ -91,6 +93,11 @@ import kotlinx.coroutines.launch
 val Context.myDataStore by preferencesDataStore(name =  "user_info")
 
 class MainActivity : ComponentActivity() {
+//    companion object {
+//        init {
+//            System.loadLibrary("mediapipe_tasks_vision_jni")
+//        }
+//    }
     private val homePageViewModel: HomePageViewModel by viewModels {
         HomePageViewModelFactory(applicationContext)
     }
@@ -259,7 +266,7 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
         Box(
             contentAlignment = Alignment.TopCenter
         ) {
-            HorizontalPager(modifier = Modifier.padding(padding), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
+            HorizontalPager(modifier = Modifier.padding(top = padding.calculateTopPadding()), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
                 when (page) {
                     0 -> HomePage(homePageViewModel, context, homeNavController, Modifier.padding(8.dp), authViewModel)
                     1 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
