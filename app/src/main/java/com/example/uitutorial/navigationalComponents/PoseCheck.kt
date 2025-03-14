@@ -54,6 +54,11 @@ import androidx.compose.ui.geometry.Offset
 
 @Composable
 fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel()) {
+    object {
+        init {
+            System.loadLibrary("mediapipe_tasks_vision_jni")
+        }
+    }
     val hasPermission by viewPermissionModel.hasPermission.collectAsState(initial = false)
     val scope = rememberCoroutineScope()
     val currentContext = LocalContext.current

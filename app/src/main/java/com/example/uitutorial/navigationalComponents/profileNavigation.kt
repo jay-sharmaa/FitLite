@@ -1,11 +1,13 @@
 package com.example.uitutorial.navigationalComponents
 
 import android.speech.tts.Voice
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.uitutorial.components.ExerciseActivity
 import com.example.uitutorial.components.Exerciselayout
 import com.example.uitutorial.components.GeneralSettings

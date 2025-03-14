@@ -93,11 +93,7 @@ import kotlinx.coroutines.launch
 val Context.myDataStore by preferencesDataStore(name =  "user_info")
 
 class MainActivity : ComponentActivity() {
-//    companion object {
-//        init {
-//            System.loadLibrary("mediapipe_tasks_vision_jni")
-//        }
-//    }
+
     private val homePageViewModel: HomePageViewModel by viewModels {
         HomePageViewModelFactory(applicationContext)
     }

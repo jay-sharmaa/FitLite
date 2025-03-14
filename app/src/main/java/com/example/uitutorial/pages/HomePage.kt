@@ -52,6 +52,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.uitutorial.components.DietLayout
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
+import com.example.uitutorial.ui.theme.Purple120
 import com.example.uitutorial.ui.theme.Purple80
 import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
@@ -199,7 +200,7 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
 
 @Composable
 fun CircleChip(modifier: Modifier) {
-    var backgroundColor: Color = Purple80
+    var backgroundColor: Color = Purple120
     val days = arrayOf("Sun", "Mon", "Tue", "Wed", "Thr", "Fri", "Sat")
     LazyRow(
         modifier = modifier,
