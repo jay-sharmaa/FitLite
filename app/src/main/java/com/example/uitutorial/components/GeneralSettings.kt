@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.uitutorial.ui.theme.Purple80
 
-@Preview(showSystemUi = true)
 @Composable
 fun GeneralSettings() {
     val darkModeEnabled = remember { mutableStateOf(false) }
