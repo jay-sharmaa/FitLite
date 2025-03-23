@@ -38,9 +38,6 @@ import com.example.uitutorial.ui.theme.Gray40
 
 @Composable
 fun Exerciselayout(navController: NavHostController) {
-    val postViewModel: ApiViewModel = viewModel()
-    val posts by postViewModel.posts.collectAsState()
-
     ElevatedCard(
         colors = CardDefaults.cardColors(
             containerColor = Gray40
@@ -59,13 +56,6 @@ fun Exerciselayout(navController: NavHostController) {
             ) {
                 items(myList) { data ->
                     Widgets(data.name, data.publisher, data.imageVector, navController)
-                }
-            }
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(posts) { post ->
-                    PostItem(post)
                 }
             }
         }

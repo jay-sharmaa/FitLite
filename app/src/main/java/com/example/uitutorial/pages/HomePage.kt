@@ -14,9 +14,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -47,9 +52,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.uitutorial.api.ApiViewModel
+import com.example.uitutorial.api.Post
 import com.example.uitutorial.components.DietLayout
+import com.example.uitutorial.components.PostItem
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
 import com.example.uitutorial.ui.theme.Purple120
@@ -59,9 +68,10 @@ import kotlinx.coroutines.launch
 
 val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
-
 @Composable
 fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel) {
+    val postViewModel: ApiViewModel = viewModel()
+    val posts by postViewModel.posts.collectAsState()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     Box(
         modifier = Modifier
@@ -69,17 +79,46 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
             .padding(all = 8.dp),
         contentAlignment = Alignment.TopCenter,
     ) {
-        Column {
-            Log.d("Where is Waldo", currentRoute.toString())
-            if(currentRoute == "exerciseLayout")
-                WeeklyCard(viewModel, context)
-            if(currentRoute == "exerciseLayout")
-                Spacer(modifier = Modifier.height(10.dp))
-            ExerciseNavigationGraph(navController = navController, modifier)
-            if(currentRoute == "exerciseLayout")
-                Spacer(modifier = Modifier.height(10.dp))
-            if(currentRoute == "exerciseLayout")
-                DietLayout()
+        LazyColumn(
+            modifier = Modifier.fillMaxSize() // LazyColumn handles scrolling automatically
+        ) {
+            item {
+                Log.d("Where is Waldo", currentRoute.toString())
+
+                if (currentRoute == "exerciseLayout")
+                    WeeklyCard(viewModel, context)
+
+                if (currentRoute == "exerciseLayout")
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                ExerciseNavigationGraph(navController = navController, modifier)
+
+                if (currentRoute == "exerciseLayout")
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                if (currentRoute == "exerciseLayout")
+                    DietLayout()
+
+                if (currentRoute == "exerciseLayout")
+                    DietaryCard(posts = posts)
+            }
+        }
+    }
+}
+
+@Composable
+fun DietaryCard(posts: List<Post>){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 100.dp, max = 900.dp)
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(posts) { post ->
+                PostItem(post)
+            }
         }
     }
 }

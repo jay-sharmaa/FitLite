@@ -17,7 +17,7 @@ class ApiViewModel : ViewModel(){
 
     private fun fetchPosts() {
         viewModelScope.launch {
-            try{
+            try {
                 val response = RetrofitInstance.api.getPosts()
                 _posts.value = response
             } catch(e: Exception){

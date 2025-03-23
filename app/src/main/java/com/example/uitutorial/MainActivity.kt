@@ -4,6 +4,7 @@ import MyBottomAppBar
 import com.example.uitutorial.Auth.MyNav
 import android.Manifest
 import android.content.Context
+import androidx.compose.foundation.layout.*
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -264,7 +265,7 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
         ) {
             HorizontalPager(modifier = Modifier.padding(top = padding.calculateTopPadding()), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
                 when (page) {
-                    0 -> HomePage(homePageViewModel, context, homeNavController, Modifier.padding(8.dp), authViewModel)
+                    0 -> HomePage(homePageViewModel, context, homeNavController, Modifier, authViewModel)
                     1 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
                     2 -> SettingsPage(authViewModel)
                 }
@@ -276,8 +277,7 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
     }
 }
 
-fun check(currentHomeRoute: String?, currentProfileRoute: String?): Boolean{
-
+fun check(currentHomeRoute: String?, currentProfileRoute: String?): Boolean {
     return (currentHomeRoute == "exerciseLayout" && currentProfileRoute == null) || (currentProfileRoute == "profileLayout" && currentHomeRoute == null) ||
             (currentHomeRoute == "exerciseLayout" && currentProfileRoute == "profileLayout")
 }
