@@ -19,9 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -55,24 +52,28 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.uitutorial.api.ApiViewModel
-import com.example.uitutorial.api.Post
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.uitutorial.components.DietLayout
-import com.example.uitutorial.components.PostItem
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
+import com.example.uitutorial.paging.PagingViewModel
 import com.example.uitutorial.ui.theme.Purple120
-import com.example.uitutorial.ui.theme.Purple80
 import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.items
+import androidx.paging.LoadState
+import com.example.uitutorial.paging.AppDatabase
+import com.example.uitutorial.paging.provideRetrofit
 
 val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
 @Composable
 fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel) {
-    val postViewModel: ApiViewModel = viewModel()
-    val posts by postViewModel.posts.collectAsState()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val apiService = provideRetrofit()
+    val database = AppDatabase.getDatabase(context)
+    val pagingviewModel = PagingViewModel(apiService, database)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -100,24 +101,35 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
                     DietLayout()
 
                 if (currentRoute == "exerciseLayout")
-                    DietaryCard(posts = posts)
+                    PostListScreen(pagingviewModel)
             }
         }
     }
 }
 
 @Composable
-fun DietaryCard(posts: List<Post>){
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 100.dp, max = 900.dp)
-    ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(posts) { post ->
-                PostItem(post)
+fun PostListScreen(viewModel: PagingViewModel = viewModel()) {
+    val lazyPagingItems = viewModel.posts.collectAsLazyPagingItems()
+
+    LazyColumn {
+        items(lazyPagingItems.itemCount) { index ->
+            val post = lazyPagingItems[index]
+            post?.let {
+                Text(text = it.title, modifier = Modifier.padding(8.dp))
+            }
+        }
+
+        lazyPagingItems.apply {
+            when {
+                loadState.refresh is LoadState.Loading -> {
+                    item { Text("Loading...", modifier = Modifier.padding(8.dp)) }
+                }
+                loadState.append is LoadState.Loading -> {
+                    item { Text("Loading more...", modifier = Modifier.padding(8.dp)) }
+                }
+                loadState.refresh is LoadState.Error -> {
+                    item { Text("Error loading data", modifier = Modifier.padding(8.dp)) }
+                }
             }
         }
     }
