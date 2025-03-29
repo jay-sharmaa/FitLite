@@ -81,7 +81,7 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
         contentAlignment = Alignment.TopCenter,
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize() // LazyColumn handles scrolling automatically
+            modifier = Modifier.fillMaxSize()
         ) {
             item {
                 Log.d("Where is Waldo", currentRoute.toString())
@@ -100,36 +100,40 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
                 if (currentRoute == "exerciseLayout")
                     DietLayout()
 
-                if (currentRoute == "exerciseLayout")
-                    PostListScreen(pagingviewModel)
+                if (currentRoute == "exerciseLayout"){
+                    PostListContent(pagingviewModel)
+                }
             }
         }
     }
 }
 
 @Composable
-fun PostListScreen(viewModel: PagingViewModel = viewModel()) {
+fun PostListContent(viewModel: PagingViewModel = viewModel()) {
     val lazyPagingItems = viewModel.posts.collectAsLazyPagingItems()
-
-    LazyColumn {
-        items(lazyPagingItems.itemCount) { index ->
-            val post = lazyPagingItems[index]
-            post?.let {
-                Text(text = it.title, modifier = Modifier.padding(8.dp))
+    when (lazyPagingItems.loadState.refresh) {
+        is LoadState.Loading -> {
+            if (lazyPagingItems.itemCount == 0) {
+                Text("Loading...", modifier = Modifier.padding(8.dp))
             }
         }
 
-        lazyPagingItems.apply {
-            when {
-                loadState.refresh is LoadState.Loading -> {
-                    item { Text("Loading...", modifier = Modifier.padding(8.dp)) }
+        is LoadState.Error -> {
+            if (lazyPagingItems.itemCount == 0) {
+                Text("Error loading data. Check internet connection.", modifier = Modifier.padding(8.dp))
+            }
+        }
+
+        else -> {
+            for (index in 0 until lazyPagingItems.itemCount) {
+                val post = lazyPagingItems[index]
+                post?.let {
+                    Text(text = it.title, modifier = Modifier.padding(8.dp))
                 }
-                loadState.append is LoadState.Loading -> {
-                    item { Text("Loading more...", modifier = Modifier.padding(8.dp)) }
-                }
-                loadState.refresh is LoadState.Error -> {
-                    item { Text("Error loading data", modifier = Modifier.padding(8.dp)) }
-                }
+            }
+
+            if (lazyPagingItems.loadState.append is LoadState.Loading) {
+                Text("Loading more...", modifier = Modifier.padding(8.dp))
             }
         }
     }

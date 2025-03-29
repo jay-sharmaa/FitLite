@@ -13,6 +13,9 @@ interface PostDao {
     @Query("SELECT * FROM posts")
     fun getPagedPosts(): PagingSource<Int, PostEntity>
 
+    @Query("SELECT COUNT(*) FROM posts")
+    suspend fun countPosts(): Int
+
     @Query("DELETE FROM posts")
     suspend fun clearAll()
 }

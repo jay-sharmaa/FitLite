@@ -1,4 +1,5 @@
 package com.example.uitutorial.paging
+import android.util.Log
 import androidx.paging.*
 import androidx.room.withTransaction
 
@@ -24,14 +25,28 @@ class PostRemoteMediator(
                 }
             }
 
-            val response = apiService.getPosts(page = page, pageSize = state.config.pageSize)
-
-            database.withTransaction {
-                if (loadType == LoadType.REFRESH) postDao.clearAll()
-                postDao.insertAll(response)
+            val response = try {
+                apiService.getPosts(page = page, pageSize = state.config.pageSize)
+            } catch (e: Exception) {
+                Log.e("PostRemoteMediator", "Error fetching from API, checking local DB", e)
+                null
             }
 
-            MediatorResult.Success(endOfPaginationReached = response.isEmpty())
+            database.withTransaction {
+                if (response != null) {
+                    Log.d("database", "Data inserted")
+                    if (loadType == LoadType.REFRESH) postDao.clearAll()
+                    postDao.insertAll(response)
+                }
+            }
+
+            val localDataExists = postDao.countPosts() > 0
+
+            if (response == null && !localDataExists) {
+                return MediatorResult.Error(Exception("No internet and no cached data"))
+            }
+
+            MediatorResult.Success(endOfPaginationReached = response?.isEmpty() ?: false)
         } catch (e: Exception) {
             MediatorResult.Error(e)
         }
