@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,7 +61,6 @@ import com.example.uitutorial.paging.PagingViewModel
 import com.example.uitutorial.ui.theme.Purple120
 import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.lazy.items
 import androidx.paging.LoadState
 import com.example.uitutorial.paging.AppDatabase
 import com.example.uitutorial.paging.provideRetrofit
@@ -72,7 +72,7 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     val apiService = provideRetrofit()
     val database = AppDatabase.getDatabase(context)
-    val pagingviewModel = PagingViewModel(apiService, database)
+    val pagingViewModel = PagingViewModel(apiService, database)
 
     Box(
         modifier = Modifier
@@ -101,7 +101,7 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
                     DietLayout()
 
                 if (currentRoute == "exerciseLayout"){
-                    PostListContent(pagingviewModel)
+                    PostListContent(pagingViewModel)
                 }
             }
         }
@@ -188,7 +188,6 @@ fun PrettyDietCard(
     }
 }
 
-
 @Composable
 fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
 
@@ -221,7 +220,7 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
                     append(dayWorkOut.toString())
                 }
                 withStyle(style = SpanStyle()) {
-                    append("/7") // out of days
+                    append("/7")
                 }
             },
                 modifier = Modifier.clickable {

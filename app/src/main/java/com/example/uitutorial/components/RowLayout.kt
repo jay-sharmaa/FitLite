@@ -1,10 +1,12 @@
 package com.example.uitutorial.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,25 +31,36 @@ import com.example.uitutorial.pages.PrettyDietCard
 import com.example.uitutorial.ui.theme.Gray40
 
 @Composable
-fun Exerciselayout(navController: NavHostController) {
-    ElevatedCard(
-        colors = CardDefaults.cardColors(
-            containerColor = Gray40
-        )
+fun Exerciselayout(navController: NavHostController, modifier : Modifier) {
+    Box(
+        modifier = modifier.size(width = 400.dp, height = 200.dp)
     ) {
-        Column {
-            Text(text = "Recommended Exercise", style = TextStyle(fontSize = 24.sp,
-                fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(all = 5.dp))
-            Divider(modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .fillMaxWidth(fraction = 0.9f))
+        ElevatedCard(
+            colors = CardDefaults.cardColors(
+                containerColor = Gray40
+            ),
+            modifier = modifier.size(width = 400.dp, height = 200.dp)
+        ) {
+            Column {
+                Text(
+                    text = "Recommended Exercise", style = TextStyle(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.padding(all = 5.dp)
+                )
+                Divider(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(fraction = 0.9f)
+                )
 
-            LazyRow(
-                state = rememberLazyListState()
-            ) {
-                items(myList) { data ->
-                    Widgets(data.name, data.publisher, data.imageVector, navController)
+                LazyRow(
+                    state = rememberLazyListState()
+                ) {
+                    items(myList) { data ->
+                        Widgets(data.name, data.publisher, data.imageVector, navController)
+                    }
                 }
             }
         }
