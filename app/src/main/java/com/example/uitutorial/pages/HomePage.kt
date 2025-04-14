@@ -54,7 +54,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.example.uitutorial.components.DietLayout
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
 import com.example.uitutorial.paging.PagingViewModel
@@ -96,9 +95,6 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
 
                 if (currentRoute == "exerciseLayout")
                     Spacer(modifier = Modifier.height(10.dp))
-
-                if (currentRoute == "exerciseLayout")
-                    DietLayout()
 
                 if (currentRoute == "exerciseLayout"){
                     PostListContent(pagingViewModel)
@@ -144,10 +140,16 @@ fun PrettyDietCard(
     dietName: String,
     dietaryType: String,
     image: Int,
+    navController: NavHostController
 ) {
     Box(modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 10.dp)) {
+        .padding(horizontal = 10.dp)
+        .clickable {
+            Log.d("Check", "Pressed")
+            navController.navigate("dietPage")
+        }
+    ) {
         Image(
             painter = painterResource(id = image),
             contentDescription = dietName,
@@ -172,6 +174,7 @@ fun PrettyDietCard(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(16.dp)
+
         ) {
             Text(
                 text = dietName,
@@ -309,6 +312,9 @@ fun AlertDialogExample(
                         ).show()
                     } else {
                         textFieldValue = it
+                        if(it == ""){
+                            textFieldValue = "0"
+                        }
                     }
                 }
             )

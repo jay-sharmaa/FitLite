@@ -169,13 +169,13 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
 }
 
 @Composable
-fun FilamentComposeView() {
+fun FilamentComposeView(modifier : Modifier) {
     var rotationX by remember { mutableStateOf(0f) }
     var rotationY by remember { mutableStateOf(0f) }
     val filamentView = remember { mutableStateOf<FilamentView?>(null) }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         AndroidView(
             factory = { context ->

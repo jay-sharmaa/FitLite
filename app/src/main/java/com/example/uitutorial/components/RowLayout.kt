@@ -32,18 +32,53 @@ import com.example.uitutorial.ui.theme.Gray40
 
 @Composable
 fun Exerciselayout(navController: NavHostController, modifier : Modifier) {
-    Box(
-        modifier = modifier.size(width = 400.dp, height = 200.dp)
-    ) {
+    Column {
+        Box(
+            modifier = modifier.size(width = 400.dp, height = 200.dp)
+        ) {
+            ElevatedCard(
+                colors = CardDefaults.cardColors(
+                    containerColor = Gray40
+                ),
+                modifier = modifier.size(width = 400.dp, height = 200.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "Recommended Exercise", style = TextStyle(
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = Modifier.padding(all = 5.dp)
+                    )
+                    Divider(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .fillMaxWidth(fraction = 0.9f)
+                    )
+
+                    LazyRow(
+                        state = rememberLazyListState()
+                    ) {
+                        items(myList) { data ->
+                            Widgets(data.name, data.publisher, data.imageVector, navController)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         ElevatedCard(
+            shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Gray40
             ),
-            modifier = modifier.size(width = 400.dp, height = 200.dp)
+            modifier = Modifier.height(200.dp)
         ) {
             Column {
                 Text(
-                    text = "Recommended Exercise", style = TextStyle(
+                    "Dietary Preferences", style = TextStyle(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     ),
@@ -58,50 +93,16 @@ fun Exerciselayout(navController: NavHostController, modifier : Modifier) {
                 LazyRow(
                     state = rememberLazyListState()
                 ) {
-                    items(myList) { data ->
-                        Widgets(data.name, data.publisher, data.imageVector, navController)
+                    items(dietList) { diet ->
+                        PrettyDietCard(
+                            dietName = diet.dietName,
+                            dietaryType = diet.dietaryType,
+                            image = diet.imageVector,
+                            navController = navController
+                        )
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun DietLayout(){
-    ElevatedCard(
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Gray40
-        ),
-        modifier = Modifier.height(200.dp)
-    ) {
-        Column {
-            Text(
-                "Dietary Preferences", style = TextStyle(
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.padding(all = 5.dp)
-            )
-            Divider(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(fraction = 0.9f)
-            )
-
-            LazyRow(
-                state = rememberLazyListState()
-            ) {
-                items(dietList) { diet ->
-                    PrettyDietCard(
-                        dietName = diet.dietName,
-                        dietaryType = diet.dietaryType,
-                        image = diet.imageVector
-                    )
-                }
-            }
-
         }
     }
 }

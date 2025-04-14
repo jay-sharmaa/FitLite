@@ -29,7 +29,6 @@ fun Widgets(name: String, publisher: String, imageVector: Int, navController: Na
             .size(width = 200.dp, height = 180.dp)
             .background(color = Gray40)
             .clickable {
-
                 navController.navigate("exerciseActivity")
             }
     ) {

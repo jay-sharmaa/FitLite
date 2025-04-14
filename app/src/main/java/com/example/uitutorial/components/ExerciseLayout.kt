@@ -73,7 +73,7 @@ fun ExerciseActivity(navController: NavHostController, modifier: Modifier) {
         modifier = modifier.fillMaxSize(),
         bottomBar = {
             Button(
-                onClick = { showBottomSheet = true }, // Show bottom modal on click
+                onClick = { showBottomSheet = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
@@ -212,6 +212,7 @@ fun ExerciseCard(title: String, duration: String, imageRes: Int, navController: 
                     .size(60.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .clickable {
+                        Log.d("check", "passed")
                         navController.navigate("form3DModel")
                     }
             )
