@@ -53,12 +53,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 
 @Composable
-fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel()) {
-    object {
-        init {
-            System.loadLibrary("mediapipe_tasks_vision_jni")
-        }
-    }
+fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel(), modifier: Modifier) {
+//    object {
+//        init {
+//            System.loadLibrary("mediapipe_tasks_vision_jni")
+//        }
+//    }
     val hasPermission by viewPermissionModel.hasPermission.collectAsState(initial = false)
     val scope = rememberCoroutineScope()
     val currentContext = LocalContext.current
@@ -67,27 +67,27 @@ fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel()) {
     var poseResult by remember { mutableStateOf<PoseLandmarkerResult?>(null) }
     var processingImage by remember { mutableStateOf(false) }
 
-    val poseLandmarker = remember {
-        try {
-            val baseOptions = BaseOptions.builder()
-                .setModelAssetPath("pose_landmarker_lite.task")
-                .build()
-
-            val options = PoseLandmarker.PoseLandmarkerOptions.builder()
-                .setBaseOptions(baseOptions)
-                .setRunningMode(RunningMode.IMAGE)
-                .setNumPoses(1)
-                .setMinPoseDetectionConfidence(0.3f)
-                .setMinPosePresenceConfidence(0.3f)
-                .setMinTrackingConfidence(0.3f)
-                .build()
-
-            PoseLandmarker.createFromOptions(currentContext, options)
-        } catch (e: Exception) {
-            Log.e("PoseDetection", "Error creating pose landmarker", e)
-            null
-        }
-    }
+//    val poseLandmarker = remember {
+//        try {
+//            val baseOptions = BaseOptions.builder()
+//                .setModelAssetPath("pose_landmarker_lite.task")
+//                .build()
+//
+//            val options = PoseLandmarker.PoseLandmarkerOptions.builder()
+//                .setBaseOptions(baseOptions)
+//                .setRunningMode(RunningMode.IMAGE)
+//                .setNumPoses(1)
+//                .setMinPoseDetectionConfidence(0.3f)
+//                .setMinPosePresenceConfidence(0.3f)
+//                .setMinTrackingConfidence(0.3f)
+//                .build()
+//
+//            PoseLandmarker.createFromOptions(currentContext, options)
+//        } catch (e: Exception) {
+//            Log.e("PoseDetection", "Error creating pose landmarker", e)
+//            null
+//        }
+//    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -113,7 +113,7 @@ fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel()) {
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
+            CameraPreview(controller = controller, modifier = modifier)
 
             if (poseResult != null) {
                 PoseLandmarkOverlay(poseResult = poseResult!!)
@@ -127,6 +127,7 @@ fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel()) {
                 verticalAlignment = Alignment.Bottom
             ) {
                 IconButton(onClick = {
+                    Log.d("Camera Switched", "yes")
                     controller.cameraSelector =
                         if (controller.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
                             CameraSelector.DEFAULT_FRONT_CAMERA
@@ -145,20 +146,20 @@ fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel()) {
                     onClick = {
                         if (!processingImage) {
                             processingImage = true
-                            takePhotoAndDetectPose(
-                                controller = controller,
-                                context = currentContext,
-                                poseLandmarker = poseLandmarker,
-                                onPhotoTaken = viewModel::onTakePhoto,
-                                onPoseDetected = { result ->
-                                    poseResult = result
-                                    processingImage = false
-                                },
-                                onError = {
-                                    processingImage = false
-                                    Log.e("PoseDetection", "Error processing image", it)
-                                }
-                            )
+//                            takePhotoAndDetectPose(
+//                                controller = controller,
+//                                context = currentContext,
+//                                poseLandmarker = poseLandmarker,
+//                                onPhotoTaken = viewModel::onTakePhoto,
+//                                onPoseDetected = { result ->
+//                                    poseResult = result
+//                                    processingImage = false
+//                                },
+//                                onError = {
+//                                    processingImage = false
+//                                    Log.e("PoseDetection", "Error processing image", it)
+//                                }
+//                            )
                         }
                     },
                     enabled = !processingImage

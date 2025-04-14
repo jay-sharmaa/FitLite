@@ -25,7 +25,7 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
         composable("form3DModel") { FilamentComposeView(Modifier.size(400.dp, 800.dp)) }
         composable("poseCheck") {
             Log.d("NotHere", "pass")
-            PoseCheck()
+            PoseCheck(modifier = Modifier.size(400.dp, 800.dp))
         }
 
         composable("dietPage") {
