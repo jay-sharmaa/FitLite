@@ -3,19 +3,20 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface ApiService {
-    @GET("posts")
+    @Headers("X-api-key: \${API_NINJA_KEY}")
+    @GET("nutrition")
     suspend fun getPosts(
-        @Query("_page") page: Int,
-        @Query("_limit") pageSize: Int
+        @Query("query") query: String,
     ): List<PostEntity>
 }
 
 fun provideRetrofit(): ApiService{
     return retrofit2.Retrofit.Builder()
-        .baseUrl("https://jsonplaceholder.typicode.com/")
+        .baseUrl("https://api.api-ninjas.com/v1/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(ApiService::class.java)
@@ -23,7 +24,11 @@ fun provideRetrofit(): ApiService{
 
 @Entity(tableName = "posts")
 data class PostEntity(
-    @PrimaryKey val id: Int,
-    val title: String,
-    val body: String
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val name: String,
+    val fat_total_g: Float,
+    val fat_saturated_g: Float,
+    val cholesterol_mg: Float,
+    val fiber_g: Float,
+    val sugar_g: Float
 )

@@ -19,6 +19,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        val properties = com.android.build.gradle.internal.cxx.configure.gradleLocalProperties(rootDir)
+        buildConfigField("String", "API_NINJA_KEY", "\"${properties.getProperty("API_NINJA_KEY")}\"")
     }
 
     buildTypes {
@@ -39,6 +41,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.7"

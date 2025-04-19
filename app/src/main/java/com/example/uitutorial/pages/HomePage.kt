@@ -1,6 +1,7 @@
 package com.example.uitutorial.pages
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -14,10 +15,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,7 +39,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -63,6 +64,7 @@ import kotlinx.coroutines.launch
 import androidx.paging.LoadState
 import com.example.uitutorial.paging.AppDatabase
 import com.example.uitutorial.paging.provideRetrofit
+import java.io.IOException
 
 val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
@@ -97,7 +99,7 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
                     Spacer(modifier = Modifier.height(10.dp))
 
                 if (currentRoute == "exerciseLayout"){
-                    PostListContent(pagingViewModel)
+                    PostListContent(pagingViewModel, modifier.size(width = 400.dp, height = 200.dp))
                 }
             }
         }
@@ -105,31 +107,60 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
 }
 
 @Composable
-fun PostListContent(viewModel: PagingViewModel = viewModel()) {
+fun PostListContent(viewModel: PagingViewModel = viewModel(), modifier: Modifier) {
     val lazyPagingItems = viewModel.posts.collectAsLazyPagingItems()
-    when (lazyPagingItems.loadState.refresh) {
-        is LoadState.Loading -> {
-            if (lazyPagingItems.itemCount == 0) {
-                Text("Loading...", modifier = Modifier.padding(8.dp))
-            }
-        }
 
-        is LoadState.Error -> {
-            if (lazyPagingItems.itemCount == 0) {
-                Text("Error loading data. Check internet connection.", modifier = Modifier.padding(8.dp))
-            }
-        }
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        LazyColumn {
+            when (lazyPagingItems.loadState.refresh) {
+                is LoadState.Loading -> {
+                    if (lazyPagingItems.itemCount == 0) {
+                        item {
+                            Text("Loading...", modifier = Modifier.padding(8.dp))
+                        }
+                    }
+                }
 
-        else -> {
-            for (index in 0 until lazyPagingItems.itemCount) {
+                is LoadState.Error -> {
+                    if (lazyPagingItems.itemCount == 0) {
+                        item {
+                            val error = (lazyPagingItems.loadState.refresh as LoadState.Error).error
+                            Text(
+                                "Error loading data: ${error.localizedMessage ?: "Check internet connection."}",
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    // No need to handle this case separately, as items will be displayed below
+                }
+            }
+
+            items(lazyPagingItems.itemCount) { index ->
                 val post = lazyPagingItems[index]
                 post?.let {
-                    Text(text = it.title, modifier = Modifier.padding(8.dp))
+                    Text(text = it.name, modifier = Modifier.padding(8.dp))
                 }
             }
 
             if (lazyPagingItems.loadState.append is LoadState.Loading) {
-                Text("Loading more...", modifier = Modifier.padding(8.dp))
+                item {
+                    Text("Loading more...", modifier = Modifier.padding(8.dp))
+                }
+            }
+
+            if (lazyPagingItems.loadState.append is LoadState.Error) {
+                item {
+                    val error = (lazyPagingItems.loadState.append as LoadState.Error).error
+                    Text(
+                        "Error loading more data: ${error.localizedMessage ?: "Check internet connection."}",
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
             }
         }
     }
@@ -139,9 +170,18 @@ fun PostListContent(viewModel: PagingViewModel = viewModel()) {
 fun PrettyDietCard(
     dietName: String,
     dietaryType: String,
-    image: Int,
+    image: String,
     navController: NavHostController
 ) {
+    val context = LocalContext.current
+    val bitmap = remember(image) {
+        try {
+            val inputStream = context.assets.open(image)
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: IOException) {
+            null
+        }
+    }
     Box(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 10.dp)
@@ -150,14 +190,15 @@ fun PrettyDietCard(
             navController.navigate("dietPage")
         }
     ) {
-        Image(
-            painter = painterResource(id = image),
-            contentDescription = dietName,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        )
+        bitmap?.let {
+            Log.d("Loaded", "img")
+            Image(
+                bitmap = it.asImageBitmap(),
+                contentDescription = "Image Loaded",
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+        }
 
         Box(
             modifier = Modifier

@@ -26,7 +26,7 @@ class PostRemoteMediator(
             }
 
             val response = try {
-                apiService.getPosts(page = page, pageSize = state.config.pageSize)
+                apiService.getPosts(query = "fish")
             } catch (e: Exception) {
                 Log.e("PostRemoteMediator", "Error fetching from API, checking local DB", e)
                 null
@@ -35,7 +35,6 @@ class PostRemoteMediator(
             database.withTransaction {
                 if (response != null) {
                     Log.d("database", "Data inserted")
-                    if (loadType == LoadType.REFRESH) postDao.clearAll()
                     postDao.insertAll(response)
                 }
             }

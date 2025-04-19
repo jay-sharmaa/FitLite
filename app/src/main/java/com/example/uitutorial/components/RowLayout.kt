@@ -11,11 +11,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -60,7 +58,7 @@ fun Exerciselayout(navController: NavHostController, modifier : Modifier) {
                         state = rememberLazyListState()
                     ) {
                         items(myList) { data ->
-                            Widgets(data.name, data.publisher, data.imageVector, navController)
+                            Widgets(data.name, data.publisher, data.imageFileName, navController)
                         }
                     }
                 }
@@ -97,7 +95,7 @@ fun Exerciselayout(navController: NavHostController, modifier : Modifier) {
                         PrettyDietCard(
                             dietName = diet.dietName,
                             dietaryType = diet.dietaryType,
-                            image = diet.imageVector,
+                            image = diet.imageFileName,
                             navController = navController
                         )
                     }
