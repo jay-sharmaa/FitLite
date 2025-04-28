@@ -108,7 +108,11 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
 
 @Composable
 fun PostListContent(viewModel: PagingViewModel = viewModel(), modifier: Modifier) {
-    val lazyPagingItems = viewModel.posts.collectAsLazyPagingItems()
+    // Remember the pagingItems to avoid recomposition triggering multiple collections
+    val postsFlow = remember { viewModel.posts }
+
+    // Collect as lazy paging items in the composition
+    val lazyPagingItems = postsFlow.collectAsLazyPagingItems()
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -135,9 +139,7 @@ fun PostListContent(viewModel: PagingViewModel = viewModel(), modifier: Modifier
                     }
                 }
 
-                else -> {
-                    // No need to handle this case separately, as items will be displayed below
-                }
+                is LoadState.NotLoading -> TODO()
             }
 
             items(lazyPagingItems.itemCount) { index ->
@@ -147,20 +149,24 @@ fun PostListContent(viewModel: PagingViewModel = viewModel(), modifier: Modifier
                 }
             }
 
-            if (lazyPagingItems.loadState.append is LoadState.Loading) {
-                item {
-                    Text("Loading more...", modifier = Modifier.padding(8.dp))
+            when (lazyPagingItems.loadState.append) {
+                is LoadState.Loading -> {
+                    item {
+                        Text("Loading more...", modifier = Modifier.padding(8.dp))
+                    }
                 }
-            }
 
-            if (lazyPagingItems.loadState.append is LoadState.Error) {
-                item {
-                    val error = (lazyPagingItems.loadState.append as LoadState.Error).error
-                    Text(
-                        "Error loading more data: ${error.localizedMessage ?: "Check internet connection."}",
-                        modifier = Modifier.padding(8.dp)
-                    )
+                is LoadState.Error -> {
+                    item {
+                        val error = (lazyPagingItems.loadState.append as LoadState.Error).error
+                        Text(
+                            "Error loading more data: ${error.localizedMessage ?: "Check internet connection."}",
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                 }
+
+                else -> { /* No action needed */ }
             }
         }
     }

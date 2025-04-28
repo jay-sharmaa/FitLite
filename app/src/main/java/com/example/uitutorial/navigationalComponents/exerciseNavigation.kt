@@ -27,7 +27,6 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
             Log.d("NotHere", "pass")
             PoseCheck(modifier = Modifier.size(400.dp, 800.dp))
         }
-
         composable("dietPage") {
             Log.d("DietPage", "Passed")
             DietPage(Modifier.size(400.dp, 800.dp))

@@ -31,10 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.uitutorial.paging.PagingViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun DietPage(modifier: Modifier) {
+fun DietPage(modifier: Modifier, viewModel: PagingViewModel = viewModel()) {
     val dietaryMaterials = listOf("Spinach", "Quinoa", "Almonds", "Greek Yogurt", "Blueberries")
     val benefits = listOf(
         "Rich in vitamins and minerals",
