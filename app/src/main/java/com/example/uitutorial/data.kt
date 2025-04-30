@@ -13,10 +13,10 @@ data class Diet(
 )
 
 val dietList: List<Diet> = listOf(
-    Diet(dietName = "Eggs", dietaryType = "Keto", imageFileName = "images/eggs.png"),
-    Diet(dietName = "Fish and Fries", dietaryType = "Not Keto", imageFileName = "images/fish.png"),
-    Diet(dietName = "Fruit Salad", dietaryType = "Keto", imageFileName = "images/fruitSalad.png"),
-    Diet(dietName = "Salad", dietaryType = "Not Keto", imageFileName = "images/salad.png"),
+    Diet(dietName = "Eggs", dietaryType = "Keto", imageFileName = "eggs.png"),
+    Diet(dietName = "Fish", dietaryType = "Not Keto", imageFileName = "fish.png"),
+    Diet(dietName = "Fruit Salad", dietaryType = "Keto", imageFileName = "fruitSalad.png"),
+    Diet(dietName = "Salad", dietaryType = "Not Keto", imageFileName = "salad.png"),
 )
 
 val myList: List<Data> = listOf(

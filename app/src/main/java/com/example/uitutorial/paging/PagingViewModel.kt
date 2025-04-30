@@ -8,12 +8,18 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import kotlinx.coroutines.flow.Flow
+import java.util.Locale
 
-class PagingViewModel(apiService: ApiService, database: AppDatabase): ViewModel() {
+class PagingViewModel(
+    private val apiService: ApiService,
+    private val database: AppDatabase,
+    private val searchQuery: String
+) : ViewModel() {
+    private val temp = searchQuery.substringAfter(" ").lowercase(Locale.ROOT)
     @OptIn(ExperimentalPagingApi::class)
     val posts: Flow<PagingData<PostEntity>> = Pager(
         config = PagingConfig(pageSize = 10),
-        remoteMediator = PostRemoteMediator(apiService, database),
-        pagingSourceFactory = {database.postDao().getPagedPosts()}
+        remoteMediator = PostRemoteMediator(apiService, database, searchQuery),
+        pagingSourceFactory = { database.postDao().getPagedPosts(temp) }
     ).flow.cachedIn(viewModelScope)
 }

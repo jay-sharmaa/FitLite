@@ -95,7 +95,7 @@ fun Exerciselayout(navController: NavHostController, modifier : Modifier) {
                         PrettyDietCard(
                             dietName = diet.dietName,
                             dietaryType = diet.dietaryType,
-                            image = diet.imageFileName,
+                            oldImage = diet.imageFileName,
                             navController = navController
                         )
                     }

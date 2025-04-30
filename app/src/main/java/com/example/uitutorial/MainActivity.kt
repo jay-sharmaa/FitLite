@@ -267,7 +267,7 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
                 when (page) {
                     0 -> HomePage(homePageViewModel, context, homeNavController, Modifier, authViewModel)
                     1 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
-                    2 -> SettingsPage(authViewModel)
+                    2 -> SettingsPage()
                 }
             }
         }

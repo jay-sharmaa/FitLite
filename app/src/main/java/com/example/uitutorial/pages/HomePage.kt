@@ -22,7 +22,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,7 +65,9 @@ import com.example.uitutorial.ui.theme.Purple120
 import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
 import androidx.paging.LoadState
+import com.example.uitutorial.paging.ApiService
 import com.example.uitutorial.paging.AppDatabase
+import com.example.uitutorial.paging.PagingViewModelFactory
 import com.example.uitutorial.paging.provideRetrofit
 import java.io.IOException
 
@@ -71,9 +76,7 @@ val Context.dataStore by preferencesDataStore(name = "user_preferences")
 @Composable
 fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel) {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-    val apiService = provideRetrofit()
-    val database = AppDatabase.getDatabase(context)
-    val pagingViewModel = PagingViewModel(apiService, database)
+
 
     Box(
         modifier = Modifier
@@ -93,13 +96,13 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
                 if (currentRoute == "exerciseLayout")
                     Spacer(modifier = Modifier.height(10.dp))
 
-                ExerciseNavigationGraph(navController = navController, modifier)
+                ExerciseNavigationGraph(navController = navController, modifier, context)
 
                 if (currentRoute == "exerciseLayout")
                     Spacer(modifier = Modifier.height(10.dp))
 
                 if (currentRoute == "exerciseLayout"){
-                    PostListContent(pagingViewModel, modifier.size(width = 400.dp, height = 200.dp))
+//                    PostListContent(modifier = modifier.size(width = 400.dp, height = 200.dp), apiService = apiService, database = database)
                 }
             }
         }
@@ -107,11 +110,14 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
 }
 
 @Composable
-fun PostListContent(viewModel: PagingViewModel = viewModel(), modifier: Modifier) {
-    // Remember the pagingItems to avoid recomposition triggering multiple collections
-    val postsFlow = remember { viewModel.posts }
+fun PostListContent(modifier: Modifier, apiService: ApiService, database: AppDatabase) {
+    val factory = remember {
+        PagingViewModelFactory(apiService, database, "1lb eggs")
+    }
 
-    // Collect as lazy paging items in the composition
+    val viewModel: PagingViewModel = viewModel(factory = factory)
+
+    val postsFlow = remember { viewModel.posts }
     val lazyPagingItems = postsFlow.collectAsLazyPagingItems()
 
     Box(
@@ -122,51 +128,88 @@ fun PostListContent(viewModel: PagingViewModel = viewModel(), modifier: Modifier
                 is LoadState.Loading -> {
                     if (lazyPagingItems.itemCount == 0) {
                         item {
-                            Text("Loading...", modifier = Modifier.padding(8.dp))
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                            }
                         }
                     }
                 }
-
                 is LoadState.Error -> {
                     if (lazyPagingItems.itemCount == 0) {
                         item {
                             val error = (lazyPagingItems.loadState.refresh as LoadState.Error).error
-                            Text(
-                                "Error loading data: ${error.localizedMessage ?: "Check internet connection."}",
-                                modifier = Modifier.padding(8.dp)
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "Error loading data: ${error.localizedMessage ?: "Check internet connection."}",
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(onClick = { lazyPagingItems.refresh() }) {
+                                    Text("Retry")
+                                }
+                            }
                         }
                     }
                 }
-
-                is LoadState.NotLoading -> TODO()
+                is LoadState.NotLoading -> {
+                    // No action needed for initial load completion
+                }
             }
 
             items(lazyPagingItems.itemCount) { index ->
                 val post = lazyPagingItems[index]
                 post?.let {
-                    Text(text = it.name, modifier = Modifier.padding(8.dp))
+                    Text(it.name)
                 }
             }
 
             when (lazyPagingItems.loadState.append) {
                 is LoadState.Loading -> {
                     item {
-                        Text("Loading more...", modifier = Modifier.padding(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        }
                     }
                 }
-
                 is LoadState.Error -> {
                     item {
                         val error = (lazyPagingItems.loadState.append as LoadState.Error).error
-                        Text(
-                            "Error loading more data: ${error.localizedMessage ?: "Check internet connection."}",
-                            modifier = Modifier.padding(8.dp)
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                "Error loading more: ${error.localizedMessage ?: "Check connection"}",
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Button(
+                                onClick = { lazyPagingItems.retry() },
+                                modifier = Modifier.padding(4.dp)
+                            ) {
+                                Text("Retry")
+                            }
+                        }
                     }
                 }
+                is LoadState.NotLoading -> {
 
-                else -> { /* No action needed */ }
+                }
             }
         }
     }
@@ -176,9 +219,10 @@ fun PostListContent(viewModel: PagingViewModel = viewModel(), modifier: Modifier
 fun PrettyDietCard(
     dietName: String,
     dietaryType: String,
-    image: String,
+    oldImage: String,
     navController: NavHostController
 ) {
+    val image = "images/$oldImage"
     val context = LocalContext.current
     val bitmap = remember(image) {
         try {
@@ -192,8 +236,8 @@ fun PrettyDietCard(
         .fillMaxWidth()
         .padding(horizontal = 10.dp)
         .clickable {
-            Log.d("Check", "Pressed")
-            navController.navigate("dietPage")
+            val temp : String = "1lb $dietName"
+            navController.navigate("dietPage/$temp/$oldImage")
         }
     ) {
         bitmap?.let {
