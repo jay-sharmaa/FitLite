@@ -24,11 +24,26 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
         startDestination = "exerciseLayout",
     ) {
         composable("exerciseLayout") { Exerciselayout(navController, modifier) }
-        composable("exerciseActivity") { ExerciseActivity(navController, Modifier.size(400.dp, 800.dp)) }
-        composable("form3DModel") { FilamentComposeView(Modifier.size(400.dp, 800.dp)) }
+        composable(
+            route = "exerciseActivity/{temp}",
+            arguments = listOf(
+                navArgument("temp") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val dataId = backStackEntry.arguments?.getString("temp")
+            ExerciseActivity(navController, Modifier.size(410.dp, 1000.dp), dataId!!, context)
+        }
+        composable(
+            route = "form3DModel/{dataId}",
+            arguments = listOf(
+                navArgument("dataId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val dataId = backStackEntry.arguments?.getString("dataId")
+            FilamentComposeView(Modifier.size(410.dp, 1000.dp), dataId!!)
+        }
         composable("poseCheck") {
-            Log.d("NotHere", "pass")
-            PoseCheck(modifier = Modifier.size(400.dp, 800.dp))
+            PoseCheck(modifier = Modifier.size(410.dp, 1000.dp))
         }
         composable(
             route = "dietPage/{dietType}/{image}",
@@ -39,7 +54,8 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
         ) { backStackEntry ->
             val dietType = backStackEntry.arguments?.getString("dietType")
             val image = backStackEntry.arguments?.getString("image")
-            DietPage(modifier = Modifier.size(400.dp, 800.dp), dietName = dietType!!, context = context, oldImage = image!!)
+            DietPage(modifier = Modifier.size(410.dp, 1000.dp), dietName = dietType!!,
+                context = context, oldImage = image!!)
         }
     }
 }

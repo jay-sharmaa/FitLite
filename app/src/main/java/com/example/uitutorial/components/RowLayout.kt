@@ -58,7 +58,7 @@ fun Exerciselayout(navController: NavHostController, modifier : Modifier) {
                         state = rememberLazyListState()
                     ) {
                         items(myList) { data ->
-                            Widgets(data.name, data.publisher, data.imageFileName, navController)
+                            Widgets(data.name, data.publisher, data.imageFileName, data.id, navController)
                         }
                     }
                 }

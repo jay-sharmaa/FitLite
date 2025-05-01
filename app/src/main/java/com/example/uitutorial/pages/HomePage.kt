@@ -76,8 +76,6 @@ val Context.dataStore by preferencesDataStore(name = "user_preferences")
 @Composable
 fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel) {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -100,116 +98,6 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
 
                 if (currentRoute == "exerciseLayout")
                     Spacer(modifier = Modifier.height(10.dp))
-
-                if (currentRoute == "exerciseLayout"){
-//                    PostListContent(modifier = modifier.size(width = 400.dp, height = 200.dp), apiService = apiService, database = database)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun PostListContent(modifier: Modifier, apiService: ApiService, database: AppDatabase) {
-    val factory = remember {
-        PagingViewModelFactory(apiService, database, "1lb eggs")
-    }
-
-    val viewModel: PagingViewModel = viewModel(factory = factory)
-
-    val postsFlow = remember { viewModel.posts }
-    val lazyPagingItems = postsFlow.collectAsLazyPagingItems()
-
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        LazyColumn {
-            when (lazyPagingItems.loadState.refresh) {
-                is LoadState.Loading -> {
-                    if (lazyPagingItems.itemCount == 0) {
-                        item {
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-                            }
-                        }
-                    }
-                }
-                is LoadState.Error -> {
-                    if (lazyPagingItems.itemCount == 0) {
-                        item {
-                            val error = (lazyPagingItems.loadState.refresh as LoadState.Error).error
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    "Error loading data: ${error.localizedMessage ?: "Check internet connection."}",
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Button(onClick = { lazyPagingItems.refresh() }) {
-                                    Text("Retry")
-                                }
-                            }
-                        }
-                    }
-                }
-                is LoadState.NotLoading -> {
-                    // No action needed for initial load completion
-                }
-            }
-
-            items(lazyPagingItems.itemCount) { index ->
-                val post = lazyPagingItems[index]
-                post?.let {
-                    Text(it.name)
-                }
-            }
-
-            when (lazyPagingItems.loadState.append) {
-                is LoadState.Loading -> {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        }
-                    }
-                }
-                is LoadState.Error -> {
-                    item {
-                        val error = (lazyPagingItems.loadState.append as LoadState.Error).error
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "Error loading more: ${error.localizedMessage ?: "Check connection"}",
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Button(
-                                onClick = { lazyPagingItems.retry() },
-                                modifier = Modifier.padding(4.dp)
-                            ) {
-                                Text("Retry")
-                            }
-                        }
-                    }
-                }
-                is LoadState.NotLoading -> {
-
-                }
             }
         }
     }

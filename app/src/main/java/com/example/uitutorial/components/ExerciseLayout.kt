@@ -1,12 +1,12 @@
 package com.example.uitutorial.components
 
-import android.app.Application
-import android.content.Intent
+import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,8 +21,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,78 +28,67 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ComponentActivity
-import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startForegroundService
 import androidx.navigation.NavHostController
 import com.example.uitutorial.R
-import com.example.uitutorial.services.RunningServices
+import com.example.uitutorial.myList
+import java.io.IOException
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExerciseActivity(navController: NavHostController, modifier: Modifier) {
+fun ExerciseActivity(navController: NavHostController, modifier: Modifier, dataId : String, context : Context) {
     val sheetState = rememberModalBottomSheetState()
-    val coroutineScope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
-
+    val image = myList[dataId.toInt()].imageFileName
+    val bitmap = remember(image){
+        try{
+            val inputStream = context.assets.open(image)
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: IOException) {
+            null
+        }
+    }
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            Button(
-                onClick = { showBottomSheet = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A4FCF)) // Purple button
-            ) {
-                Text("Start", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
-        }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             item {
-                Image(
-                    painter = painterResource(id = R.drawable.background_fitness),
-                    contentDescription = "Yoga Workout",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
-                )
+                bitmap?.let {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = "Image",
+                        modifier = Modifier.size(400.dp)
+                    )
+                }
             }
 
             item {
                 Text(
-                    text = "Yoga Workout",
+                    text = myList[dataId.toInt()].name,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(16.dp)
@@ -110,27 +97,35 @@ fun ExerciseActivity(navController: NavHostController, modifier: Modifier) {
 
             item {
                 Row(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Chip("32:00", Icons.Default.Timer)
+                    Chip("30:00", Icons.Default.Timer)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Chip("16 exercises", Icons.Default.FitnessCenter)
+                    Chip("${myList[dataId.toInt()].steps.size} steps", Icons.Default.FitnessCenter)
                 }
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            items(
-                listOf(
-                    "Reclining to Big Toe" to "12 minutes",
-                    "Cow Pose" to "8 minutes",
-                    "Warrior II Pose" to "12 minutes"
-                )
-            ) { (title, duration) ->
-                ExerciseCard(title, duration, R.drawable.ic_launcher_foreground, navController)
+            val steps = myList[dataId.toInt()].steps
+
+            items(steps) { step ->
+                ExerciseCard(step, R.drawable.ic_launcher_foreground, navController, dataId.toInt())
+            }
+
+            item {
+                Button(
+                    onClick = { showBottomSheet = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A4FCF))
+                ) {
+                    Text("Start", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
+
     }
 
-    // Bottom Modal Sheet
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -180,7 +175,6 @@ fun ExerciseActivity(navController: NavHostController, modifier: Modifier) {
     }
 }
 
-// Helper UI Components
 @Composable
 fun Chip(text: String, icon: ImageVector) {
     Row(
@@ -196,7 +190,7 @@ fun Chip(text: String, icon: ImageVector) {
 }
 
 @Composable
-fun ExerciseCard(title: String, duration: String, imageRes: Int, navController: NavHostController) {
+fun ExerciseCard(title: String, imageRes: Int, navController: NavHostController, dataId: Int) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -212,14 +206,13 @@ fun ExerciseCard(title: String, duration: String, imageRes: Int, navController: 
                     .size(60.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .clickable {
-                        Log.d("check", "passed")
-                        navController.navigate("form3DModel")
+
+                        navController.navigate("form3DModel/$dataId")
                     }
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(duration, fontSize = 14.sp, color = Color.Gray)
             }
         }
     }

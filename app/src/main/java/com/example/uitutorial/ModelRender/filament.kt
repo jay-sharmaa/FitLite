@@ -12,12 +12,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.uitutorial.myList
 import com.google.android.filament.*
 import com.google.android.filament.gltfio.*
 import java.nio.ByteBuffer
@@ -25,7 +27,7 @@ import java.nio.ByteOrder
 import com.google.android.filament.gltfio.UbershaderLoader
 import kotlin.math.pow
 
-class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callback, Choreographer.FrameCallback{
+class FilamentView(context: Context, private val fileName: String): SurfaceView(context), SurfaceHolder.Callback, Choreographer.FrameCallback{
     private lateinit var engine: Engine
     private lateinit var renderer: Renderer
     private lateinit var scene: Scene
@@ -60,7 +62,7 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
 
             if (transformInstance != 0) {
                 val rotationMatrix = FloatArray(16)
-                android.opengl.Matrix.setRotateM(rotationMatrix, 0, angleDegrees, Y, X, 0f) // Rotate around Y-axis
+                android.opengl.Matrix.setRotateM(rotationMatrix, 0, angleDegrees, Y, X, 0f)
 
                 transformManager.setTransform(transformInstance, rotationMatrix)
             }
@@ -86,7 +88,7 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
             view.camera = camera
             view.scene = scene
             setupLighting()
-            loadGlbModel("model.glb")
+            loadGlbModel(fileName = myList[fileName.toInt()].obj)
 
             startRenderLoop()
 
@@ -169,9 +171,9 @@ class FilamentView(context: Context): SurfaceView(context), SurfaceHolder.Callba
 }
 
 @Composable
-fun FilamentComposeView(modifier : Modifier) {
-    var rotationX by remember { mutableStateOf(0f) }
-    var rotationY by remember { mutableStateOf(0f) }
+fun FilamentComposeView(modifier : Modifier, fileName: String) {
+    var rotationX by remember { mutableFloatStateOf(0f) }
+    var rotationY by remember { mutableFloatStateOf(0f) }
     val filamentView = remember { mutableStateOf<FilamentView?>(null) }
 
     Column(
@@ -179,7 +181,7 @@ fun FilamentComposeView(modifier : Modifier) {
     ) {
         AndroidView(
             factory = { context ->
-                FilamentView(context).also {
+                FilamentView(context, fileName).also {
                     filamentView.value = it
                 }
             },

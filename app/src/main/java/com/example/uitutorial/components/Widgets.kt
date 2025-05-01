@@ -23,7 +23,7 @@ import com.example.uitutorial.ui.theme.Gray40
 import java.io.IOException
 
 @Composable
-fun Widgets(name: String, publisher: String, imageFileName: String, navController: NavHostController) {
+fun Widgets(name: String, publisher: String, imageFileName: String, dataId: Int, navController: NavHostController) {
     val context = LocalContext.current
     val bitmap = remember(imageFileName) {
         try {
@@ -39,7 +39,8 @@ fun Widgets(name: String, publisher: String, imageFileName: String, navControlle
             .size(width = 200.dp, height = 180.dp)
             .background(color = Gray40)
             .clickable {
-                navController.navigate("exerciseActivity")
+                val temp : Int = dataId
+                navController.navigate("exerciseActivity/$temp")
             }
     ) {
         bitmap?.let {
