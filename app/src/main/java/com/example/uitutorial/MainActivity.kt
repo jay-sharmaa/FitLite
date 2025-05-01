@@ -58,6 +58,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -272,8 +274,16 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
             }
         }
     }
+    val items = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) {
+        mutableStateListOf<String>()
+    }
     if (active) {
-        MySearchBar(onClose = { active = false })
+        MySearchBar(onClose = { active = false }, items)
     }
 }
 
@@ -284,19 +294,9 @@ fun check(currentHomeRoute: String?, currentProfileRoute: String?): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MySearchBar(onClose: () -> Unit) {
+fun MySearchBar(onClose: () -> Unit, items: SnapshotStateList<String>) {
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(true) }
-
-    val items = rememberSaveable(
-        saver = listSaver(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) {
-        mutableStateListOf("Android developer", "Flutter developer")
-    }
-
     SearchBar(
         modifier = Modifier.fillMaxWidth(),
         query = text,
@@ -347,10 +347,10 @@ fun MySearchBar(onClose: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (items.indexOf(item) == 0) {
-                            Icons.Default.Search
-                        } else {
+                        imageVector = if (items.contains(item)) {
                             Icons.Default.Refresh
+                        } else {
+                            Icons.Default.Search
                         },
                         contentDescription = if (items.indexOf(item) == 0) "Search" else "History"
                     )
