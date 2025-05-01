@@ -83,8 +83,8 @@ import com.example.uitutorial.data.ViewModelFactory
 import com.example.uitutorial.navigation.BottomScreens
 import com.example.uitutorial.navigationalComponents.PoseCheck
 import com.example.uitutorial.navigationalComponents.ProfileNavigationGraph
+import com.example.uitutorial.pages.ExplorePage
 import com.example.uitutorial.pages.HomePage
-import com.example.uitutorial.pages.SettingsPage
 import com.example.uitutorial.services.RunningApp
 import com.example.uitutorial.services.RunningServices
 import com.example.uitutorial.ui.theme.Purple80
@@ -142,9 +142,6 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
     )
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
-    var active by remember {
-        mutableStateOf(false)
-    }
 
     val scope = rememberCoroutineScope()
 
@@ -218,15 +215,6 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
                         titleContentColor = Color.White
                     ),
                     actions = {
-                        if (!active) {
-                            IconButton(onClick = { active = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "Search",
-                                    tint = Color.Black
-                                )
-                            }
-                        }
                         IconButton(onClick = {
                             val intent = Intent(context, RunningServices::class.java).apply {
                                 action = RunningServices.Actions.Start.toString()
@@ -235,7 +223,7 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
                         }) {
                             Icon(
                                 imageVector = Icons.Default.MusicNote,
-                                contentDescription = "Search",
+                                contentDescription = "Start",
                                 tint = Color.Black
                             )
                         }
@@ -268,8 +256,8 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
             HorizontalPager(modifier = Modifier.padding(top = padding.calculateTopPadding()), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
                 when (page) {
                     0 -> HomePage(homePageViewModel, context, homeNavController, Modifier, authViewModel)
-                    1 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
-                    2 -> SettingsPage()
+                    1 -> ExplorePage()
+                    2 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
                 }
             }
         }
@@ -282,82 +270,9 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
     ) {
         mutableStateListOf<String>()
     }
-    if (active) {
-        MySearchBar(onClose = { active = false }, items)
-    }
 }
 
 fun check(currentHomeRoute: String?, currentProfileRoute: String?): Boolean {
     return (currentHomeRoute == "exerciseLayout" && currentProfileRoute == null) || (currentProfileRoute == "profileLayout" && currentHomeRoute == null) ||
             (currentHomeRoute == "exerciseLayout" && currentProfileRoute == "profileLayout")
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MySearchBar(onClose: () -> Unit, items: SnapshotStateList<String>) {
-    var text by remember { mutableStateOf("") }
-    var active by remember { mutableStateOf(true) }
-    SearchBar(
-        modifier = Modifier.fillMaxWidth(),
-        query = text,
-        onQueryChange = { text = it },
-        onSearch = {
-            if (text.isNotEmpty()) {
-                items.add(text)
-                Log.d("MySearchBar", items.joinToString(", "))
-            }
-            onClose()
-        },
-        active = active,
-        onActiveChange = {
-            active = it
-            if (!active) onClose()
-        },
-        placeholder = { Text("Search...") },
-        leadingIcon = {
-            Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-        },
-        trailingIcon = {
-            if (active) {
-                Icon(
-                    modifier = Modifier.clickable {
-                        if (text.isNotEmpty()) {
-                            text = ""
-                        } else {
-                            onClose()
-                        }
-                    },
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close"
-                )
-            }
-        }
-    ) {
-        LazyColumn {
-            items(items.filter { it.contains(text, ignoreCase = true) }) { item ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(all = 14.dp)
-                        .clickable {
-                            text = item
-                            onClose()
-                        },
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (items.contains(item)) {
-                            Icons.Default.Refresh
-                        } else {
-                            Icons.Default.Search
-                        },
-                        contentDescription = if (items.indexOf(item) == 0) "Search" else "History"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = item)
-                }
-            }
-        }
-    }
 }

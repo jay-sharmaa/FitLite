@@ -1,5 +1,6 @@
 package com.example.uitutorial.pages
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,13 +38,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import com.example.uitutorial.R
 import com.example.uitutorial.data.PersonViewModel
@@ -52,22 +56,21 @@ import kotlinx.coroutines.delay
 suspend fun loadProgress(updateProgress: (Float) -> Unit) {
     for (i in 1..100) {
         updateProgress(i.toFloat() / 100)
-        delay(3)
+        delay(2)
     }
 }
 
 @Composable
 fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel, userName: String, modifier: Modifier) {
+    val context = LocalContext.current
     var currentProgress by remember { mutableStateOf(0f) }
     var loading by remember { mutableStateOf(true) }
-    val coroutine = rememberCoroutineScope()
 
     LaunchedEffect(Unit){
         loadProgress {progress ->
             currentProgress = progress
         }
         loading = false
-        Log.d("Profile", userName)
     }
 
     Column(
@@ -115,6 +118,55 @@ fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel
         ProfileSettingTile(title = "Sync Watch", navController, "syncWatch")
         Divider()
         ProfileSettingTile(title = "Sync Spotify", navController, "syncSpotify")
+
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            TextDivider(text = "Support")
+
+        }
+
+        Text(
+            text = "Share with friends",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                ) {
+                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, "Check out this amazing app!")
+                    }
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    context.startActivity(shareIntent)
+                }
+                .padding(16.dp)
+        )
+
+        // Feedback
+        Text(
+            text = "Feedback",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    val url = "https://example.com/feedback"
+                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                    context.startActivity(intent)
+                }
+                .padding(16.dp)
+        )
+
+        // More from developer
+        Text(
+            text = "More from developer",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    val url = "https://example.com/developer"
+                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                    context.startActivity(intent)
+                }
+                .padding(16.dp)
+        )
+
     }
 }
 
@@ -140,4 +192,37 @@ fun bottomRoundedShape(radius: Dp): Shape {
         bottomStart = CornerSize(radius),
         bottomEnd = CornerSize(radius)
     )
+}
+
+@Composable
+fun TextDivider(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Gray,
+    thickness: Dp = 1.dp,
+    padding: Dp = 8.dp,
+    textColor: Color = Color.Gray,
+    fontSize: TextUnit = 14.sp
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Divider(
+            color = color,
+            thickness = thickness,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = fontSize,
+            modifier = Modifier.padding(horizontal = padding)
+        )
+        Divider(
+            color = color,
+            thickness = thickness,
+            modifier = Modifier.weight(1f)
+        )
+    }
 }

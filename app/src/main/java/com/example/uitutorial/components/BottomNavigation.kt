@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -92,13 +93,13 @@ fun MyBottomAppBar(
                             .padding(8.dp), contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Person",
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Explore",
                             tint = Color.White
                         )
                     }
                 },
-                label = { Text("Person") },
+                label = { Text("Explore") },
                 selected = pagerState.currentPage == 1,
                 onClick = {
                     scope.launch {
@@ -126,13 +127,13 @@ fun MyBottomAppBar(
                             .padding(8.dp), contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Person",
                             tint = Color.White
                         )
                     }
                 },
-                label = { Text("Settings") },
+                label = { Text("Person") },
                 selected = pagerState.currentPage == 2,
                 onClick = {
                     scope.launch {
@@ -147,6 +148,9 @@ fun MyBottomAppBar(
                 ),
                 alwaysShowLabel = false
             )
+
+
+
         }
     }
 

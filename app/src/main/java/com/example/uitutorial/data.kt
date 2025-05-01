@@ -80,4 +80,3 @@ fun addExercise(
     myList.add(newExercise)
 }
 
-
