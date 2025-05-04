@@ -2,6 +2,7 @@ package com.example.uitutorial.pages
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -22,9 +23,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -42,39 +41,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
-import com.example.uitutorial.paging.PagingViewModel
 import com.example.uitutorial.ui.theme.Purple120
 import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
-import androidx.paging.LoadState
-import com.example.uitutorial.paging.ApiService
-import com.example.uitutorial.paging.AppDatabase
-import com.example.uitutorial.paging.PagingViewModelFactory
-import com.example.uitutorial.paging.provideRetrofit
 import java.io.IOException
 
 val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
 @Composable
-fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel) {
+fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavHostController, modifier: Modifier, authViewModel: PersonViewModel, tts: TextToSpeech) {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     Box(
         modifier = Modifier
@@ -94,7 +82,7 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
                 if (currentRoute == "exerciseLayout")
                     Spacer(modifier = Modifier.height(10.dp))
 
-                ExerciseNavigationGraph(navController = navController, modifier, context)
+                ExerciseNavigationGraph(navController = navController, modifier, context, tts)
 
                 if (currentRoute == "exerciseLayout")
                     Spacer(modifier = Modifier.height(10.dp))
@@ -236,7 +224,7 @@ fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
 
 @Composable
 fun CircleChip(modifier: Modifier) {
-    var backgroundColor: Color = Purple120
+    val backgroundColor: Color = Purple120
     val days = arrayOf("Sun", "Mon", "Tue", "Wed", "Thr", "Fri", "Sat")
     LazyRow(
         modifier = modifier,

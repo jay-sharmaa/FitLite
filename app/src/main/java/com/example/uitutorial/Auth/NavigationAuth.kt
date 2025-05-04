@@ -3,6 +3,7 @@ package com.example.uitutorial.Auth
 import LoginPage
 import SignUpPage
 import android.content.Context
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +24,7 @@ import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.flow.map
 
 @Composable
-fun MyNav(homePageViewModel: HomePageViewModel, context : Context, authViewModel: PersonViewModel){
+fun MyNav(homePageViewModel: HomePageViewModel, context : Context, authViewModel: PersonViewModel, tts: TextToSpeech){
     val navController = rememberNavController()
 
     val SAVE_LOGIN_INFO = stringPreferencesKey("login_info")
@@ -44,7 +45,7 @@ fun MyNav(homePageViewModel: HomePageViewModel, context : Context, authViewModel
                 backStackEntry ->
             val userName = backStackEntry.arguments?.getString("userName")
             if (userName != null) {
-                MainScreen(homePageViewModel = homePageViewModel, context = context, authViewModel = authViewModel, userName = userName)
+                MainScreen(homePageViewModel = homePageViewModel, context = context, authViewModel = authViewModel, userName = userName, tts = tts)
             }
         }
     }

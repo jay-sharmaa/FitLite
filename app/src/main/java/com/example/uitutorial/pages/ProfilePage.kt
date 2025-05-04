@@ -28,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,21 +54,23 @@ import com.example.uitutorial.R
 import com.example.uitutorial.data.PersonViewModel
 import kotlinx.coroutines.delay
 
-suspend fun loadProgress(updateProgress: (Float) -> Unit) {
+suspend fun loadProgress(delayMillis: Long, updateProgress: (Float) -> Unit) {
     for (i in 1..100) {
-        updateProgress(i.toFloat() / 100)
-        delay(2)
+        val progress = i.toFloat() / 100
+        updateProgress(progress)
+        delay(timeMillis = delayMillis)
     }
 }
+
 
 @Composable
 fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel, userName: String, modifier: Modifier) {
     val context = LocalContext.current
-    var currentProgress by remember { mutableStateOf(0f) }
+    var currentProgress by remember { mutableFloatStateOf(0f) }
     var loading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit){
-        loadProgress {progress ->
+        loadProgress(2) {progress ->
             currentProgress = progress
         }
         loading = false

@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -92,10 +93,14 @@ import com.example.uitutorial.viewModels.HomePageViewModel
 import com.example.uitutorial.viewModels.HomePageViewModelFactory
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 val Context.myDataStore by preferencesDataStore(name =  "user_info")
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
+
+    private lateinit var tts: TextToSpeech
+    private var isTTSReady by mutableStateOf(false)
 
     private val homePageViewModel: HomePageViewModel by viewModels {
         HomePageViewModelFactory(applicationContext)
@@ -107,6 +112,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        tts = TextToSpeech(this, this)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(
                 this,
@@ -119,19 +126,36 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     shadowElevation = 20.dp
                 ) {
-                    MyNav(homePageViewModel = homePageViewModel, context = applicationContext, authViewModel = authViewModel)
+                    MyNav(homePageViewModel = homePageViewModel, context = applicationContext, authViewModel = authViewModel, tts = tts)
                 }
             }
         }
+    }
+
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            val result = tts.setLanguage(Locale.US)
+            isTTSReady = result != TextToSpeech.LANG_MISSING_DATA &&
+                    result != TextToSpeech.LANG_NOT_SUPPORTED
+        }
+    }
+
+    override fun onDestroy() {
+        if (::tts.isInitialized) {
+            tts.stop()
+            tts.shutdown()
+        }
+        super.onDestroy()
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authViewModel: PersonViewModel, userName: String) {
+fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authViewModel: PersonViewModel, userName: String, tts : TextToSpeech) {
     Log.d("MainScreen", userName)
     val homeNavController = rememberNavController()
     val profileNavController = rememberNavController()
+    val exploreNavController = rememberNavController()
     var openAlertDialog by remember { mutableStateOf("") }
     val coroutine = rememberCoroutineScope()
 
@@ -255,8 +279,8 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
         ) {
             HorizontalPager(modifier = Modifier.padding(top = padding.calculateTopPadding()), state = pagerState, userScrollEnabled = (currentHomeRoute == "exerciseLayout")) { page ->
                 when (page) {
-                    0 -> HomePage(homePageViewModel, context, homeNavController, Modifier, authViewModel)
-                    1 -> ExplorePage()
+                    0 -> HomePage(homePageViewModel, context, homeNavController, Modifier, authViewModel, tts)
+                    1 -> ExplorePage(navController = homeNavController)
                     2 -> ProfileNavigationGraph(profileNavController, modifier = Modifier, authViewModel, userName)
                 }
             }

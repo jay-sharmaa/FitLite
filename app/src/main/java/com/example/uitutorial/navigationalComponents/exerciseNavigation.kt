@@ -1,6 +1,7 @@
 package com.example.uitutorial.navigationalComponents
 
 import android.content.Context
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -18,7 +19,7 @@ import com.example.uitutorial.components.ExerciseActivity
 import com.example.uitutorial.components.Exerciselayout
 
 @Composable
-fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier, context: Context) {
+fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier, context: Context, tts: TextToSpeech) {
     NavHost(
         navController = navController,
         startDestination = "exerciseLayout",
@@ -31,7 +32,7 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
             )
         ) { backStackEntry ->
             val dataId = backStackEntry.arguments?.getString("temp")
-            ExerciseActivity(navController, Modifier.size(410.dp, 1000.dp), dataId!!, context)
+            ExerciseActivity(navController, Modifier.size(410.dp, 1000.dp), dataId!!, context, tts)
         }
         composable(
             route = "form3DModel/{dataId}",
@@ -43,7 +44,7 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
             FilamentComposeView(Modifier.size(410.dp, 1000.dp), dataId!!)
         }
         composable("poseCheck") {
-            PoseCheck(modifier = Modifier.size(410.dp, 1000.dp))
+            PoseCheck(modifier = Modifier.size(410.dp, 850.dp), navController = NavHostController)
         }
         composable(
             route = "dietPage/{dietType}/{image}",

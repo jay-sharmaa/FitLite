@@ -2,8 +2,15 @@ package com.example.uitutorial.navigationalComponents
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -49,11 +56,17 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import androidx.compose.foundation.Canvas
+import androidx.compose.material3.Button
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
+import androidx.navigation.NavHostController
+import java.util.Locale
+
+private const val  TAG = "VOICE_FEED_BACK"
 
 @Composable
-fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel(), modifier: Modifier) {
+fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel(), modifier: Modifier, navController: NavHostController) {
 //    object {
 //        init {
 //            System.loadLibrary("mediapipe_tasks_vision_jni")
@@ -66,6 +79,16 @@ fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel(), modi
 
     var poseResult by remember { mutableStateOf<PoseLandmarkerResult?>(null) }
     var processingImage by remember { mutableStateOf(false) }
+
+    val contextvoice = LocalContext.current
+    var permissionGrantedvoice by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                contextvoice,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
 
 //    val poseLandmarker = remember {
 //        try {
@@ -95,9 +118,69 @@ fun PoseCheck(viewPermissionModel: CameraPermissionViewModel = viewModel(), modi
         viewPermissionModel.updatePermissionState()
     }
 
+    val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(contextvoice) }
+    var text by remember { mutableStateOf("") }
+    var textCounter by remember { mutableIntStateOf(0) }
+
+    val permissionLaunchervoice = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        permissionGrantedvoice = isGranted
+    }
+
     LaunchedEffect(Unit) {
         if (!hasPermission) {
             permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+        permissionLaunchervoice.launch(Manifest.permission.RECORD_AUDIO)
+        if (permissionGrantedvoice) {
+            Toast.makeText(contextvoice, "Permission Granted", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(contextvoice, "Give Permission", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(text) {
+        Log.d("Voice Activation", "Started")
+        if (!permissionGrantedvoice) {
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        } else {
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(
+                    RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                )
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            }
+
+            speechRecognizer.setRecognitionListener(object : RecognitionListener {
+                override fun onResults(results: Bundle?) {
+                    val spokenText = results
+                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull() ?: ""
+                    text = spokenText
+                    Toast.makeText(currentContext, spokenText, Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onError(error: Int) {
+                    text = "" + textCounter++
+                    Toast.makeText(currentContext, error.toString(), Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onReadyForSpeech(params: Bundle?) {}
+                override fun onBeginningOfSpeech() {}
+                override fun onRmsChanged(rmsdB: Float) {}
+                override fun onBufferReceived(buffer: ByteArray?) {}
+                override fun onEndOfSpeech() {}
+                override fun onPartialResults(partialResults: Bundle?) {}
+                override fun onEvent(eventType: Int, params: Bundle?) {}
+            })
+
+            speechRecognizer.startListening(intent)
+        }
+
+        if(text == "skip" || text == "escape" || text == "scape"){
+            navController.popBackStack()
         }
     }
 
@@ -307,4 +390,104 @@ fun CameraPreview(
         },
         modifier = modifier
     )
+}
+
+private fun initializeAndStartSpeechRecognizer(
+    context: Context,
+    onSpeechResult: (String) -> Unit,
+    onInitialized: (SpeechRecognizer) -> Unit
+) {
+    try {
+        val recognizer = SpeechRecognizer.createSpeechRecognizer(context)
+
+        recognizer.setRecognitionListener(object: RecognitionListener{
+            override fun onReadyForSpeech(params: Bundle?) {
+                Log.d(TAG, "Ready for speech")
+            }
+
+            override fun onBeginningOfSpeech() {
+                Log.d(TAG, "Beginning of speech")
+            }
+
+            override fun onRmsChanged(rmsdB: Float) {
+                // Could track audio levels if needed
+            }
+
+            override fun onBufferReceived(buffer: ByteArray?) {
+                // No-op
+            }
+
+            override fun onEndOfSpeech() {
+                Log.d(TAG, "End of speech")
+            }
+
+            override fun onError(error: Int) {
+                val errorMessage = when(error) {
+                    SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
+                    SpeechRecognizer.ERROR_CLIENT -> "Client side error"
+                    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Insufficient permissions"
+                    SpeechRecognizer.ERROR_NETWORK -> "Network error"
+                    SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
+                    SpeechRecognizer.ERROR_NO_MATCH -> "No match found"
+                    SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "RecognitionService busy"
+                    SpeechRecognizer.ERROR_SERVER -> "Server error"
+                    SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
+                    else -> "Unknown error"
+                }
+                Log.e(TAG, "Speech recognition error: $errorMessage")
+
+                // Restart after error with delay
+                android.os.Handler(context.mainLooper).postDelayed({
+                    startSpeechRecognition(recognizer)
+                }, 1000)
+            }
+
+            override fun onResults(results: Bundle?) {
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                val recognizedText = matches?.get(0) ?: "Not Recognizable"
+
+                Log.d(TAG, "Speech recognized: $recognizedText")
+
+                onSpeechResult(recognizedText)
+
+                // Restart listening automatically
+                android.os.Handler(context.mainLooper).postDelayed({
+                    startSpeechRecognition(recognizer)
+                }, 500)
+            }
+
+            override fun onPartialResults(partialResults: Bundle?) {
+                val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (!matches.isNullOrEmpty()) {
+                    Log.d(TAG, "Partial speech recognized: ${matches[0]}")
+                }
+            }
+
+            override fun onEvent(eventType: Int, params: Bundle?) {
+                // No-op
+            }
+        })
+
+        onInitialized(recognizer)
+
+        startSpeechRecognition(recognizer)
+
+    } catch (e: Exception) {
+        Log.e(TAG, "Error initializing speech recognizer: ${e.message}")
+        Toast.makeText(context, "Failed to initialize speech recognition", Toast.LENGTH_SHORT).show()
+    }
+}
+
+private fun startSpeechRecognition(recognizer: SpeechRecognizer) {
+    try {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        }
+        recognizer.startListening(intent)
+    } catch (e: Exception) {
+        Log.e(TAG, "Error starting speech recognition: ${e.message}")
+    }
 }

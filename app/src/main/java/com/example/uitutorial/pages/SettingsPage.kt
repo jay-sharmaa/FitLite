@@ -5,7 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -35,7 +41,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.uitutorial.addExercise
+import com.example.uitutorial.components.Widgets
+import com.example.uitutorial.myList
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -43,17 +52,18 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
-const val API_KEY = ""
-const val API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+const val API_KEY =
+const val API_URL =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
 data class ExerciseInfo(
     val name: String,
     val publisher: String,
-    val steps: List<String>
+    val steps: List<String>,
 )
 
 @Composable
-fun ExplorePage() {
+fun ExplorePage(navController: NavHostController) {
     val items = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },
@@ -63,10 +73,9 @@ fun ExplorePage() {
         mutableStateListOf<String>()
     }
 
-    // Store the parsed exercise info
     var exerciseName by rememberSaveable { mutableStateOf("") }
     var exercisePublisher by rememberSaveable { mutableStateOf("") }
-    var exerciseSteps = rememberSaveable(
+    val exerciseSteps = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },
             restore = { it.toMutableStateList() }
@@ -75,85 +84,101 @@ fun ExplorePage() {
         mutableStateListOf<String>()
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .padding(horizontal = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column {
-            MySearchBar(
-                items = items,
-                onExerciseInfoReceived = { exerciseInfo ->
-                    exerciseName = exerciseInfo.name
-                    exercisePublisher = exerciseInfo.publisher
-                    exerciseSteps.clear()
-                    exerciseSteps.addAll(exerciseInfo.steps)
-                }
-            )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            if (exerciseName.isNotEmpty()) {
-                Box(modifier = Modifier.padding(16.dp)) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(
-                                text = exerciseName,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 22.sp,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                            Text(
-                                text = "Published by: $exercisePublisher",
-                                fontSize = 14.sp,
-                                modifier = Modifier.padding(bottom = 12.dp)
-                            )
-                            Text(
-                                text = "Steps:",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
+        // Search Bar
+        MySearchBar(
+            items = items,
+            onExerciseInfoReceived = { exerciseInfo ->
+                exerciseName = exerciseInfo.name
+                exercisePublisher = exerciseInfo.publisher
+                exerciseSteps.clear()
+                exerciseSteps.addAll(exerciseInfo.steps)
+            }
+        )
 
-                            exerciseSteps.forEachIndexed { index, step ->
-                                Row(
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        text = "${index + 1}. ",
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(text = step)
-                                }
-                            }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Show Search Results OR Grid
+        if (exerciseName.isNotEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = exerciseName,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    Text(
+                        text = "Published by: $exercisePublisher",
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    Text(
+                        text = "Steps:",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                    exerciseSteps.forEachIndexed { index, step ->
+                        Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                            Text(text = "${index + 1}. ", fontWeight = FontWeight.Bold)
+                            Text(text = step)
                         }
                     }
+                }
+            }
 
-                    // Plus icon floating above the card
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .align(Alignment.BottomEnd)
-                            .offset(y = 28.dp)
-                            .background(Color(0xFF6200EE), shape = androidx.compose.foundation.shape.CircleShape)
-                            .clickable {
-                                addExercise(
-                                    name = exerciseName,
-                                    publisher = exercisePublisher,
-                                    steps = exerciseSteps
-                                )
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add",
-                            tint = Color.White
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .padding(top = 16.dp)
+                    .background(Color(0xFF6200EE), shape = androidx.compose.foundation.shape.CircleShape)
+                    .clickable {
+                        addExercise(
+                            name = exerciseName,
+                            publisher = exercisePublisher,
+                            steps = exerciseSteps
+                        )
+                        // Clear the result after adding
+                        exerciseName = ""
+                        exercisePublisher = ""
+                        exerciseSteps.clear()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add",
+                    tint = Color.White
+                )
+            }
+
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 160.dp),
+                state = rememberLazyGridState(),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(myList) { data ->
+                    Box(modifier = Modifier.padding(12.dp)) {
+                        Widgets(
+                            name = data.name,
+                            publisher = data.publisher,
+                            imageFileName = data.imageFileName,
+                            dataId = data.id,
+                            navController = navController
                         )
                     }
                 }
@@ -166,7 +191,7 @@ fun ExplorePage() {
 @Composable
 fun MySearchBar(
     items: SnapshotStateList<String>,
-    onExerciseInfoReceived: (ExerciseInfo) -> Unit
+    onExerciseInfoReceived: (ExerciseInfo) -> Unit,
 ) {
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
@@ -267,7 +292,10 @@ suspend fun makeApiRequest(query: String): ExerciseInfo {
                 put("contents", JSONObject().apply {
                     put("role", "user")
                     put("parts", JSONObject().apply {
-                        put("text", "I will give you a exercise name [if anything other then that is given send msg ignore] it should contain {name, hardness-level, steps[should be three steps on how to do the exercise no more no less should be one liner]} here is the name $query")
+                        put(
+                            "text",
+                            "I will give you a exercise name [if anything other then that is given send msg ignore] it should contain {name, hardness-level, steps[should be three steps on how to do the exercise no more no less should be one liner]} here is the name $query"
+                        )
                     })
                 })
             }
@@ -317,17 +345,29 @@ suspend fun makeApiRequest(query: String): ExerciseInfo {
                             return@withContext ExerciseInfo(name, publisher, steps)
                         } else {
                             Log.e("API_JSON_PARSE", "Could not find JSON in the response")
-                            return@withContext ExerciseInfo("Error", "No JSON found", listOf("Failed to parse exercise information"))
+                            return@withContext ExerciseInfo(
+                                "Error",
+                                "No JSON found",
+                                listOf("Failed to parse exercise information")
+                            )
                         }
                     }
                 }
-                return@withContext ExerciseInfo("Error", "No content found", listOf("No exercise information found in response"))
+                return@withContext ExerciseInfo(
+                    "Error",
+                    "No content found",
+                    listOf("No exercise information found in response")
+                )
             } else {
                 val errorStream = connection.errorStream
                 val error = errorStream?.bufferedReader()?.use { it.readText() } ?: "Unknown error"
                 errorStream?.close()
                 Log.e("API_HTTP_ERROR", "Error $responseCode: $error")
-                return@withContext ExerciseInfo("Error", "API Error", listOf("Error $responseCode: $error"))
+                return@withContext ExerciseInfo(
+                    "Error",
+                    "API Error",
+                    listOf("Error $responseCode: $error")
+                )
             }
         } catch (e: Exception) {
             Log.e("API_EXCEPTION", "Exception: ${e.message}", e)
