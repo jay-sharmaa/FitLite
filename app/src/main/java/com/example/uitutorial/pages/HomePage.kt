@@ -18,18 +18,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,7 +66,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
-import com.example.uitutorial.ui.theme.Pink80
 import com.example.uitutorial.ui.theme.Purple120
 import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
@@ -92,7 +99,7 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
                 if (currentRoute == "exerciseLayout")
                     Spacer(modifier = Modifier.height(10.dp))
                 if (currentRoute == "exerciseLayout") {
-                    MakeDietPlanCard()
+                    MakeDietPlanCard(navController)
                 }
             }
         }
@@ -100,14 +107,14 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
 }
 
 @Composable
-fun MakeDietPlanCard(){
+fun MakeDietPlanCard(navController: NavHostController){
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(120.dp)
     ){
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -132,7 +139,7 @@ fun MakeDietPlanCard(){
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(all = 20.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                     ) {
                         Text(
@@ -147,7 +154,10 @@ fun MakeDietPlanCard(){
                             style = TextStyle(
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
-                            )
+                            ),
+                            modifier = Modifier.clickable {
+                                navController.navigate("MakePlan")
+                            }
                         )
                     }
                 }
@@ -157,13 +167,132 @@ fun MakeDietPlanCard(){
     }
 }
 
-@Preview(showSystemUi = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MakeDietPlan(
+fun MakeDietPlan(modifier: Modifier, navController: NavHostController) {
+    var inputWeight by remember { mutableStateOf("") }
+    var inputHeight by remember { mutableStateOf("") }
+    var selectedFocus by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    var result by remember { mutableStateOf<ExerciseInfo?>(null) }
 
-){
+    val focusOptions = listOf("Abs", "Chest", "Legs", "Arms", "Cardio")
 
+    Card(
+        modifier = modifier.padding(16.dp),
+        colors = CardDefaults.cardColors(Color.Black)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            OutlinedTextField(
+                value = inputHeight,
+                onValueChange = { inputHeight = it },
+                label = { Text("Enter Your Height (cm)", color = Color.White) },
+                textStyle = TextStyle(color = Color.White),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color.White,
+                    unfocusedLabelColor = Color.Gray,
+                    cursorColor = Color.White
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            OutlinedTextField(
+                value = inputWeight,
+                onValueChange = { inputWeight = it },
+                label = { Text("Enter Your Weight (kg)", color = Color.White) },
+                textStyle = TextStyle(color = Color.White),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color.White,
+                    unfocusedLabelColor = Color.Gray,
+                    cursorColor = Color.White
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedFocus,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Select Focus Area", color = Color.White) },
+                    textStyle = TextStyle(color = Color.White),
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    focusOptions.forEach { option ->
+                        DropdownMenuItem(
+                            onClick = {
+                                selectedFocus = option
+                                expanded = false
+                            },
+                            text = {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color.Black)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(option, color = Color.White)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    if (inputHeight.isNotBlank() && inputWeight.isNotBlank() && selectedFocus.isNotBlank()) {
+                        val prompt = "Recommend one exercise for a person who is $inputHeight cm tall, weighs $inputWeight kg, and wants to focus on $selectedFocus."
+                        coroutineScope.launch {
+                            result = makeApiRequest(prompt)
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Get Exercise", color = Color.Black)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            result?.let { info ->
+                Text("Exercise: ${info.name}", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Difficulty: ${info.publisher}", color = Color.White)
+                info.steps.forEachIndexed { index, step ->
+                    Text("${index + 1}. $step", color = Color.White)
+                }
+            }
+        }
+    }
 }
+
+
 
 @Composable
 fun PrettyDietCard(

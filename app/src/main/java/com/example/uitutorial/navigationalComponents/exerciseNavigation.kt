@@ -2,8 +2,6 @@ package com.example.uitutorial.navigationalComponents
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
-import android.util.Log
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,6 +15,7 @@ import com.example.uitutorial.ModelRender.FilamentComposeView
 import com.example.uitutorial.components.DietPage
 import com.example.uitutorial.components.ExerciseActivity
 import com.example.uitutorial.components.Exerciselayout
+import com.example.uitutorial.pages.MakeDietPlan
 
 @Composable
 fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier, context: Context, tts: TextToSpeech) {
@@ -57,6 +56,11 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
             val image = backStackEntry.arguments?.getString("image")
             DietPage(modifier = Modifier.size(410.dp, 1000.dp), dietName = dietType!!,
                 context = context, oldImage = image!!)
+        }
+        composable(
+            "MakePlan"
+        ) {
+            MakeDietPlan(modifier = Modifier.size(410.dp, 850.dp, ), navController)
         }
     }
 }

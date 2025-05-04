@@ -334,7 +334,7 @@ suspend fun makeApiRequest(query: String): ExerciseInfo {
                             // Parse the exercise info from the JSON
                             val exerciseJson = JSONObject(jsonString)
                             val name = exerciseJson.optString("name", "Unknown Exercise")
-                            val publisher = exerciseJson.optString("publisher", "Unknown Publisher")
+                            val publisher = exerciseJson.optString("hardness-level", "Unknown Publisher")
 
                             val stepsArray = exerciseJson.getJSONArray("steps")
                             val steps = mutableListOf<String>()
