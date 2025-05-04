@@ -122,6 +122,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             )
         }
         setContent {
+
             MaterialTheme {
                 Surface(
                     shadowElevation = 20.dp

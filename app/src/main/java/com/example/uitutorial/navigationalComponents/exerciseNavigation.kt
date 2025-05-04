@@ -44,7 +44,7 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
             FilamentComposeView(Modifier.size(410.dp, 1000.dp), dataId!!)
         }
         composable("poseCheck") {
-            PoseCheck(modifier = Modifier.size(410.dp, 850.dp), navController = NavHostController)
+            PoseCheck(modifier = Modifier.size(410.dp, 850.dp), navController = navController)
         }
         composable(
             route = "dietPage/{dietType}/{image}",

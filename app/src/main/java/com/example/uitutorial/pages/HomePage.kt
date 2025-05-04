@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.OutlinedTextField
@@ -43,10 +45,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.preferencesDataStore
@@ -54,6 +58,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.uitutorial.data.PersonViewModel
 import com.example.uitutorial.navigationalComponents.ExerciseNavigationGraph
+import com.example.uitutorial.ui.theme.Pink80
 import com.example.uitutorial.ui.theme.Purple120
 import com.example.uitutorial.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
@@ -86,9 +91,78 @@ fun HomePage(viewModel: HomePageViewModel, context: Context, navController: NavH
 
                 if (currentRoute == "exerciseLayout")
                     Spacer(modifier = Modifier.height(10.dp))
+                if (currentRoute == "exerciseLayout") {
+                    MakeDietPlanCard()
+                }
             }
         }
     }
+}
+
+@Composable
+fun MakeDietPlanCard(){
+    ElevatedCard(
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+    ){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                "Create Your Plan", style = TextStyle(
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier.padding(all = 5.dp)
+            )
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFAEDFE)),
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                    ) {
+                        Text(
+                            text = "✨",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Text(
+                            text = "Ask Artificial Intelligence",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+fun MakeDietPlan(
+
+){
+
 }
 
 @Composable
@@ -112,7 +186,7 @@ fun PrettyDietCard(
         .fillMaxWidth()
         .padding(horizontal = 10.dp)
         .clickable {
-            val temp : String = "1lb $dietName"
+            val temp: String = "1lb $dietName"
             navController.navigate("dietPage/$temp/$oldImage")
         }
     ) {

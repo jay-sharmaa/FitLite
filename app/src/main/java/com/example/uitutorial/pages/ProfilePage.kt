@@ -150,7 +150,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    val url = "https://example.com/feedback"
+                    val url = "https://github.com/jay-sharmaa/FitLite"
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                     context.startActivity(intent)
                 }
@@ -163,13 +163,12 @@ fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    val url = "https://example.com/developer"
+                    val url = "https://github.com/jay-sharmaa"
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                     context.startActivity(intent)
                 }
                 .padding(16.dp)
         )
-
     }
 }
 

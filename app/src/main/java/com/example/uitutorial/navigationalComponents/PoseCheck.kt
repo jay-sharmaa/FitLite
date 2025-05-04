@@ -57,9 +57,11 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import java.util.Locale
 

@@ -64,6 +64,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+suspend fun loadProgressExerciseSequentially(stepCount: Int, updateProgress: (Float) -> Unit) {
+    for (i in 0 until stepCount) {
+        for (p in 0..100) {
+            val progress = i + (p / 100f)
+            updateProgress(progress)
+            delay(150)
+        }
+    }
+}
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,12 +128,12 @@ fun ExerciseActivity(navController: NavHostController, modifier: Modifier, dataI
                     Box(
                         modifier = Modifier.clickable {
                             textCoroutine.launch {
-                                loadProgress(1500) { progress->
+                                loadProgressExerciseSequentially(steps.size) { progress ->
                                     currentProgress = progress
                                 }
-                                for(i in steps.indices){
-                                    tts.speak(steps[i], TextToSpeech.QUEUE_FLUSH, null, null)
-                                    delay(timeMillis = 7500)
+                                for (step in steps) {
+                                    tts.speak(step, TextToSpeech.QUEUE_FLUSH, null, null)
+                                    delay(1000)
                                 }
                             }
                         }
@@ -135,13 +145,14 @@ fun ExerciseActivity(navController: NavHostController, modifier: Modifier, dataI
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            items(steps) { step ->
+            items(steps.size) { index ->
                 ExerciseCard(
-                    title = step,
+                    title = steps[index],
                     imageRes = R.drawable.ic_launcher_foreground,
                     navController = navController,
                     dataId = dataId.toInt(),
-                    progressTrigger = currentProgress
+                    progressTrigger = currentProgress,
+                    index = index
                 )
             }
 
@@ -230,12 +241,17 @@ fun ExerciseCard(
     imageRes: Int,
     navController: NavHostController,
     dataId: Int,
-    progressTrigger: Float
+    progressTrigger: Float,
+    index: Int
 ) {
     var currentProgress by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(progressTrigger) {
-        currentProgress = progressTrigger
+        currentProgress = when {
+            progressTrigger < index -> 0f
+            progressTrigger >= index + 1 -> 1f
+            else -> progressTrigger - index
+        }
     }
 
     Card(
@@ -244,23 +260,30 @@ fun ExerciseCard(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable {
-                        navController.navigate("form3DModel/$dataId")
-                    }
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Column {
+            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            navController.navigate("form3DModel/$dataId")
+                        }
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
             }
+            LinearProgressIndicator(
+                progress = currentProgress,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+            )
         }
-        LinearProgressIndicator(progress = currentProgress)
     }
 }
