@@ -1,7 +1,7 @@
-FitLite
+# FitLite
 FitLite is a comprehensive fitness tracking application that helps users monitor their health and fitness goals with advanced features and a seamless experience across mobile devices and wearables.
 
-Technical Features
+# Technical Features
 
 Room Database: Local data persistence for offline access and performance
 Authentication: Secure user accounts with multiple sign-in options
@@ -11,8 +11,8 @@ CameraX Integration: Take progress photos and scan QR codes for quick data entry
 Voice Control: Hands-free operation during workouts
 Wear OS Companion: Synchronized experience on smartwatches
 
-Getting Started
-Prerequisites
+# Getting Started
+# Prerequisites
 
 Android Studio Arctic Fox (2021.3.1) or newer
 Kotlin 1.6.0+
@@ -24,7 +24,7 @@ Installation
 
 Clone the repository:
 
-git clone https://github.com/jay-sharmaa/Fitlite.git
+# git clone https://github.com/jay-sharmaa/Fitlite.git
 
 Open the project in Android Studio
 Sync Gradle files
@@ -91,6 +91,4 @@ Wear OS
 Paging Library
 
 Contact
-Project Link: [https://github.com/jay-sharmaa/fitlite](https://github.com/jay-sharmaa/Fitlite.git)
-
-Made with ❤️ for fitness enthusiasts everywhere
+# Project Link: [https://github.com/jay-sharmaa/fitlite](https://github.com/jay-sharmaa/Fitlite.git)
