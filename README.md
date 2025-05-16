@@ -1,6 +1,12 @@
 # FitLite
 FitLite is a comprehensive fitness tracking application that helps users monitor their health and fitness goals with advanced features and a seamless experience across mobile devices and wearables.
 
+# Login / Signup Screen
+
+<p float="left">
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img1.jpg" width="200"/>
+</p>
+
 # Technical Features
 
 Room Database: Local data persistence for offline access and performance
