@@ -7,7 +7,7 @@ import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface ApiService {
-    @Headers("X-api-key: ")
+    @Headers("X-api-key: lYU8oxL7z2rKPqWP0Zsr8Q==jwRr8EvckY9LqDYx")
     @GET("nutrition")
     suspend fun getPosts(
         @Query("query") query: String,

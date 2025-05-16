@@ -10,7 +10,7 @@ interface PostDao {
     @Query("SELECT COUNT(*) FROM posts WHERE name = :name")
     suspend fun countByName(name: String): Int
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)  // Changed from IGNORE to REPLACE
     suspend fun insertAll(posts: List<PostEntity>)
 
     @Query("SELECT * FROM posts WHERE name = :query")
@@ -21,4 +21,8 @@ interface PostDao {
 
     @Query("DELETE FROM posts")
     suspend fun clearAll()
+
+    // Optional: Add a more targeted delete method
+    @Query("DELETE FROM posts WHERE name = :name")
+    suspend fun clearByName(name: String)
 }

@@ -44,9 +44,9 @@ class RunningServices : Service() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(true)
             .setStyle(MediaStyle().setShowActionsInCompactView(0, 1, 2))
-            .addAction(android.R.drawable.ic_media_play, "Start", startPendingIntent)
-            .addAction(android.R.drawable.ic_media_pause, "Pause", pausePendingIntent)
-            .addAction(android.R.drawable.ic_delete, "Stop", stopPendingIntent)
+            .addAction(android.R.drawable.ic_media_play, "Skip Song", startPendingIntent)
+            .addAction(android.R.drawable.ic_media_pause, "Start Song", pausePendingIntent)
+            .addAction(android.R.drawable.ic_delete, "Pause Song", stopPendingIntent)
             .build()
 
         startForeground(1, notification)

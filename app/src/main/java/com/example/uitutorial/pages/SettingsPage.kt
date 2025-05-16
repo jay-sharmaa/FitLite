@@ -52,7 +52,7 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
-const val API_KEY =
+const val API_KEY = "AIzaSyD-eVhwXXfJd6p7cgS9cK7TRqagwX3lMJE"
 const val API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 

@@ -10,49 +10,43 @@ class PostRemoteMediator(
     private val apiService: ApiService,
     private val database: AppDatabase,
     private val query: String,
+    private val forceRefresh: Boolean = false
 ) : RemoteMediator<Int, PostEntity>() {
 
     private val postDao = database.postDao()
 
-    // Normalize the query to match how data is stored
-    private val normalizedQuery: String = normalizeQuery(query)
+    // Process the query exactly how it will be stored in the database
+    private val processedQuery: String = processQueryForDatabase(query)
+    private val TAG = "PostRemoteMediator"
 
     companion object {
+        // Use a set that tracks which queries have been loaded in this session
         private val initializedQueries = mutableSetOf<String>()
 
-        // Helper function to normalize query strings
-        private fun normalizeQuery(query: String): String {
-            // Remove quantity patterns (numbers followed by units)
-            val withoutQuantity = query.replace(Regex("\\d+\\s*(?:lb|kg|g|oz|ml|l|dozen|pack|box)s?\\b"), "").trim()
-
-            // Remove any extra spaces and trim
-            val singleSpaced = withoutQuantity.replace(Regex("\\s+"), " ").trim()
-
-            // If we got an empty string after removing quantities, return original trimmed
-            if (singleSpaced.isEmpty()) return query.trim()
-
-            // Convert the first character to lowercase and keep the rest as is
-            return if (singleSpaced.isNotEmpty()) {
-                singleSpaced.first().lowercase() + singleSpaced.substring(1)
+        // This function should match exactly how you're transforming the query in ViewModel
+        private fun processQueryForDatabase(query: String): String {
+            // Extract the part after the first space and convert to lowercase
+            return if (query.contains(" ")) {
+                query.substringAfter(" ").lowercase()
             } else {
-                singleSpaced
+                query.lowercase()
             }
         }
     }
 
     override suspend fun initialize(): InitializeAction {
-        Log.d("PostRemoteMediator", "Initialize called for: $query (normalized: $normalizedQuery)")
+        Log.d(TAG, "Initialize called for: '$query' (processed: '$processedQuery'), forceRefresh: $forceRefresh")
 
-        val localCount = postDao.countByName(normalizedQuery)
-        Log.d("PostRemoteMediator", "Data count for $normalizedQuery: $localCount")
+        val localCount = postDao.countByName(processedQuery)
+        Log.d(TAG, "Data count for '$processedQuery': $localCount")
 
-        return if (initializedQueries.contains(normalizedQuery) || localCount > 0) {
-            Log.d("PostRemoteMediator", "Skipping initial refresh for: $normalizedQuery")
-            initializedQueries.add(normalizedQuery)
-            InitializeAction.SKIP_INITIAL_REFRESH
-        } else {
-            Log.d("PostRemoteMediator", "Launching initial refresh for: $normalizedQuery")
+        // If force refresh is enabled or we have no data, trigger refresh
+        return if (forceRefresh || localCount == 0) {
+            Log.d(TAG, "Launching initial refresh for: '$processedQuery'")
             InitializeAction.LAUNCH_INITIAL_REFRESH
+        } else {
+            Log.d(TAG, "Skipping initial refresh for: '$processedQuery'")
+            InitializeAction.SKIP_INITIAL_REFRESH
         }
     }
 
@@ -61,53 +55,67 @@ class PostRemoteMediator(
         state: PagingState<Int, PostEntity>,
     ): MediatorResult {
         return try {
-            Log.d("PostRemoteMediator", "Load called with type: $loadType for query: $query (normalized: $normalizedQuery)")
+            Log.d(TAG, "Load called with type: $loadType for query: '$query' (processed: '$processedQuery')")
 
-            // Check if this is a refresh and we need to fetch data
+            // For refresh, we always attempt to fetch from API if forceRefresh is true
             if (loadType == LoadType.REFRESH) {
-                val localCount = postDao.countByName(normalizedQuery)
-                Log.d("PostRemoteMediator", "Current data count for $normalizedQuery: $localCount")
+                val localCount = postDao.countByName(processedQuery)
+                Log.d(TAG, "Current data count for '$processedQuery': $localCount")
 
-                // If we have data locally, skip API call
-                if (localCount > 0) {
-                    Log.d("PostRemoteMediator", "Data already exists for: $normalizedQuery. Skipping API.")
-                    initializedQueries.add(normalizedQuery)
+                // Only skip if we have data AND we're not forcing a refresh
+                if (localCount > 0 && !forceRefresh) {
+                    Log.d(TAG, "Data already exists for: '$processedQuery' and no force refresh. Skipping API.")
                     return MediatorResult.Success(endOfPaginationReached = true)
                 }
 
-                // Add to initialized queries to prevent future refresh calls
-                initializedQueries.add(normalizedQuery)
-
                 // If we got here, we need to fetch data from API
+                Log.d(TAG, "Fetching data from API for query: '$query'")
+
                 val response = try {
-                    Log.d("PostRemoteMediator", "Fetching data from API for: $normalizedQuery")
-                    // You might want to use the original query for API call if needed
-                    apiService.getPosts(query = normalizedQuery)
+                    // Use the ORIGINAL query for the API call, not the processed one
+                    val apiResponse = apiService.getPosts(query = query)
+                    Log.d(TAG, "API returned ${apiResponse.size} items for '$query'")
+
+                    // Transform the response to match our database expectations
+                    val transformedResponse = apiResponse.map { post ->
+                        // Set the name field to be the processed query for consistent retrieval
+                        post.copy(name = processedQuery)
+                    }
+                    transformedResponse
                 } catch (e: Exception) {
-                    Log.e("PostRemoteMediator", "Error fetching from API for $normalizedQuery", e)
+                    Log.e(TAG, "Error fetching from API for '$query'", e)
                     null
                 }
 
-                database.withTransaction {
-                    if (response != null) {
-                        Log.d("PostRemoteMediator", "Inserting data into database for: $normalizedQuery")
+                if (response != null && response.isNotEmpty()) {
+                    database.withTransaction {
+                        // If force refreshing or if we have existing data, clear old data first
+                        if (forceRefresh && localCount > 0) {
+                            Log.d(TAG, "Force refresh: clearing old data for '$processedQuery'")
+                            postDao.clearAll() // Using clearAll since you don't have clearByName
+                        }
+
+                        Log.d(TAG, "Inserting ${response.size} items into database for: '$processedQuery'")
                         postDao.insertAll(response)
                     }
-                }
 
-                delay(300)
-                return MediatorResult.Success(endOfPaginationReached = true)
+                    delay(300)
+                    return MediatorResult.Success(endOfPaginationReached = true)
+                } else {
+                    Log.d(TAG, "No data returned from API for '$query'")
+                    return MediatorResult.Success(endOfPaginationReached = true)
+                }
             } else if (loadType == LoadType.APPEND || loadType == LoadType.PREPEND) {
                 // No more pages
-                Log.d("PostRemoteMediator", "APPEND/PREPEND called, returning success with endReached=true")
+                Log.d(TAG, "APPEND/PREPEND called, returning success with endReached=true")
                 return MediatorResult.Success(endOfPaginationReached = true)
             } else {
                 // Should not reach here, but just in case
-                Log.d("PostRemoteMediator", "Unknown load type: $loadType")
+                Log.d(TAG, "Unknown load type: $loadType")
                 return MediatorResult.Success(endOfPaginationReached = true)
             }
         } catch (e: Exception) {
-            Log.e("PostRemoteMediator", "Error in load", e)
+            Log.e(TAG, "Error in load", e)
             MediatorResult.Error(e)
         }
     }

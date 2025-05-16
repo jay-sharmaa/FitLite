@@ -104,7 +104,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel
                     .size(120.dp)
                     .align(Alignment.BottomCenter)
             )
-            Text(userName, modifier = Modifier.align(Alignment.BottomCenter), style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black))
+            Text("Jay", modifier = Modifier.align(Alignment.BottomCenter), style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black))
             CircularProgressIndicator(progress = currentProgress,
                 modifier = Modifier
                     .size(130.dp)

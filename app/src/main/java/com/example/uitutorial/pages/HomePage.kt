@@ -150,7 +150,7 @@ fun MakeDietPlanCard(navController: NavHostController){
                             )
                         )
                         Text(
-                            text = "Ask Artificial Intelligence",
+                            text = "Ask AI Trainer",
                             style = TextStyle(
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
