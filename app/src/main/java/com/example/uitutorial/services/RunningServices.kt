@@ -44,9 +44,9 @@ class RunningServices : Service() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(true)
             .setStyle(MediaStyle().setShowActionsInCompactView(0, 1, 2))
-            .addAction(android.R.drawable.ic_media_play, "Skip Song", startPendingIntent)
-            .addAction(android.R.drawable.ic_media_pause, "Start Song", pausePendingIntent)
-            .addAction(android.R.drawable.ic_delete, "Pause Song", stopPendingIntent)
+            .addAction(android.R.drawable.ic_media_play, "Spotify Not Found On Device", startPendingIntent)
+            .addAction(android.R.drawable.ic_media_pause, "Spotify Not Found On Device", pausePendingIntent)
+            .addAction(android.R.drawable.ic_delete, "Spotify Not Found On Device", stopPendingIntent)
             .build()
 
         startForeground(1, notification)
