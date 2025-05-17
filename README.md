@@ -1,6 +1,49 @@
 # FitLite
 FitLite is a comprehensive fitness tracking application that helps users monitor their health and fitness goals with advanced features and a seamless experience across mobile devices and wearables.
 
+# Login / Signup Screen
+
+<p float="left">
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img1.jpg" width="200"/>
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img2.jpg" width="200"/>
+</p>
+
+# Bottom Nav Screen 
+
+<p float="left">
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img3.jpg" width="200"/>
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img4.jpg" width="200"/>
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img5.jpg" width="200"/>
+</p>
+
+# Workout Screen
+
+<p float="left">
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img6.jpg" width="200"/>
+</p>
+
+# Settings Screen
+
+<p float="left">
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img7.jpg" width="200"/>
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img8.jpg" width="200"/>
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img9.jpg" width="200"/>
+</p>
+
+# Navigation As A Service
+
+<p float="left">
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img10.jpg" width="200"/>
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img11.jpg" width="200"/>
+</p>
+
+# Custom Exercise Of Your Own Preference
+
+<p float="left">
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img13.jpg" width="200"/>
+  <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img15.jpg" width="200"/>
+</p>
+
 # Technical Features
 
 Room Database: Local data persistence for offline access and performance
