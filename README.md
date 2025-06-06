@@ -6,7 +6,7 @@ FitLite is a comprehensive fitness tracking application that helps users monitor
 
 # Login / Signup Screen
 
-<p float="left">
+<p float="center">
   <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img1.jpg" width="200"/>
   <img src="https://github.com/jay-sharmaa/FitLite/blob/main/app/implimages/img2.jpg" width="200"/>
 </p>
