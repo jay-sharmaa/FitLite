@@ -2,7 +2,7 @@
 FitLite is a comprehensive fitness tracking application that helps users monitor their health and fitness goals with advanced features and a seamless experience across mobile devices and wearables.
 
 # Run the App on Your Web Page !!
-[Run App](https://appetize.io/embed/b_65yzgrf7u7swgiy4zdyiki3rke) (Due to it being an emulator camera is not working and there can be performance issues while authenticating)
+[Run App](https://appetize.io/embed/b_65yzgrf7u7swgiy4zdyiki3rke) (Due to it being on web emulator camera is not working and there can be performance issues while authenticating)
 
 # Login / Signup Screen
 
