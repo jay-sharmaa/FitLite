@@ -1,4 +1,4 @@
-package com.example.uitutorial
+package com.example.fitlite
 
 import org.junit.Test
 
