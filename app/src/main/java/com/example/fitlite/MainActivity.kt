@@ -354,10 +354,7 @@ fun MainScreen(homePageViewModel: HomePageViewModel, context : Context, authView
                         2 -> ProfileNavigationGraph(
                             profileNavController,
                             modifier = Modifier,
-                            authViewModel,
-                            userName,
-                            context,
-                            tts
+                            context = context
                         )
                     }
                 }

@@ -1,61 +1,44 @@
 package com.example.fitlite.components
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.fitlite.myDataStore
-import kotlinx.coroutines.flow.map
+import com.example.fitlite.repository.WorkoutSettingsRepository
 import kotlinx.coroutines.launch
 
 @Composable
 fun WorkoutSettings(navHostController: NavHostController) {
-    var selectedSetting by remember {
-        mutableStateOf("")
-    }
-
-    val SELECTED_GENDER = stringPreferencesKey("selected_gender")
-    val SELECTED_REST_TIME = intPreferencesKey("selected_rest_time")
+    var selectedSetting by remember { mutableStateOf("") }
 
     val context = LocalContext.current
+    val repository = remember { WorkoutSettingsRepository(context) }
     val scope = rememberCoroutineScope()
 
-    val gender by context.myDataStore.data.map { it[SELECTED_GENDER] ?: "Not set" }
-        .collectAsState(initial = "Not set")
+    val gender by repository.getGender().collectAsState(initial = "Not set")
+    val restTime by repository.getRestTime().collectAsState(initial = 0)
+    val height by repository.getHeight().collectAsState(initial = 0)
+    val weight by repository.getWeight().collectAsState(initial = 0)
 
-    val restTime by context.myDataStore.data.map { it[SELECTED_REST_TIME] ?: 0 }
-        .collectAsState(initial = 0)
-
-
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         WorkoutSettingTile(
             icon = Icons.Default.Person,
             title = "Gender",
@@ -73,6 +56,24 @@ fun WorkoutSettings(navHostController: NavHostController) {
             onClick = { selectedSetting = it }
         )
         Divider(color = Color.Gray, thickness = 1.dp)
+
+        WorkoutSettingTile(
+            icon = Icons.Default.Person,
+            title = "Height",
+            name = "Height",
+            value = if (height > 0) "$height cm" else "Not set",
+            onClick = { selectedSetting = it }
+        )
+        Divider(color = Color.Gray, thickness = 1.dp)
+
+        WorkoutSettingTile(
+            icon = Icons.Default.Person,
+            title = "Weight",
+            name = "Weight",
+            value = if (weight > 0) "$weight kg" else "Not set",
+            onClick = { selectedSetting = it }
+        )
+        Divider(color = Color.Gray, thickness = 1.dp)
     }
 
     if (selectedSetting != "") {
@@ -81,20 +82,50 @@ fun WorkoutSettings(navHostController: NavHostController) {
                 onDismiss = { selectedSetting = "" },
                 onGenderSelected = { genderSelected ->
                     scope.launch {
-                        context.myDataStore.edit { prefs ->
-                            prefs[SELECTED_GENDER] = genderSelected
-                        }
+                        repository.saveToFirebaseAndCache(
+                            field = "gender",
+                            value = genderSelected,
+                            key = repository.getGenderKey()
+                        )
                     }
                     selectedSetting = ""
                 }
             )
+
             "Training Rest" -> TrainingRestDialog(
                 onDismiss = { selectedSetting = "" },
                 onTimeSelected = { seconds ->
                     scope.launch {
-                        context.myDataStore.edit { prefs ->
-                            prefs[SELECTED_REST_TIME] = seconds
-                        }
+                        repository.saveToFirebaseAndCache(
+                            field = "restTime",
+                            value = seconds,
+                            key = repository.getRestTimeKey()
+                        )
+                    }
+                    selectedSetting = ""
+                }
+            )
+
+            "Height" -> NumberInputDialog(
+                title = "Set Height (cm)",
+                initialValue = height,
+                onDismiss = { selectedSetting = "" },
+                onValueSelected = { newValue ->
+                    scope.launch {
+                        repository.saveToFirebaseAndCache("height", newValue, repository.getHeightKey())
+                    }
+                    selectedSetting = ""
+                }
+            )
+
+            "Weight" -> NumberInputDialog(
+                title = "Set Weight (kg)",
+                initialValue = weight,
+                onDismiss = { selectedSetting = "" },
+                onValueSelected = { newValue ->
+                    scope.launch {
+                        Log.d("Firestore", weight.toString())
+                        repository.saveToFirebaseAndCache("weight", newValue, repository.getWeightKey())
                     }
                     selectedSetting = ""
                 }
@@ -279,4 +310,46 @@ fun WorkoutSettingTile(
             Text(text = value, fontSize = 16.sp, color = Color.Gray)
         }
     }
+}
+
+@Composable
+fun NumberInputDialog(
+    title: String,
+    initialValue: Int,
+    onDismiss: () -> Unit,
+    onValueSelected: (Int) -> Unit
+) {
+    var inputValue by remember { mutableStateOf(initialValue.toString()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            OutlinedTextField(
+                value = inputValue,
+                onValueChange = { newText ->
+                    if (newText.all { it.isDigit() }) {
+                        inputValue = newText
+                    }
+                },
+                singleLine = true,
+                label = { Text("Value") }
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val number = inputValue.toIntOrNull()
+                if (number != null) {
+                    onValueSelected(number)
+                }
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

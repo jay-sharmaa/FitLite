@@ -1,5 +1,6 @@
 package com.example.fitlite.components
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -10,11 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Devices
@@ -29,30 +33,69 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.NavHostController
+import com.example.fitlite.myDataStore
 import com.example.fitlite.ui.theme.Purple80
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
+val Context.myDataStore by preferencesDataStore(name =  "user_info")
+val SAVE_LOGIN_INFO = stringPreferencesKey("login_info")
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GeneralSettings(navHostController: NavHostController) {
+fun GeneralSettings(navHostController: NavHostController, modifier: Modifier, context: Context) {
     val darkModeEnabled = remember { mutableStateOf(false) }
-
-    Scaffold{ paddingValues ->
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "FitLite",
+                        fontSize = 32.sp,
+                        color = Color.Black
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Purple80,
+                    titleContentColor = Color.White
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navHostController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -79,7 +122,7 @@ fun GeneralSettings(navHostController: NavHostController) {
                 SettingsItem("About App", Icons.Default.Info)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            LogoutButton()
+            LogoutButton(context = context)
         }
     }
 }
@@ -136,13 +179,21 @@ fun SettingsToggleItem(title: String, icon: ImageVector, state: Boolean, onToggl
 }
 
 @Composable
-fun LogoutButton() {
+fun LogoutButton(context: Context) {
+    var coroutine = rememberCoroutineScope()
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
-            onClick = {  },
+            onClick = {
+                FirebaseAuth.getInstance().signOut()
+                coroutine.launch {
+                    context.myDataStore.edit { preferences ->
+                        preferences[SAVE_LOGIN_INFO] = ""
+                    }
+                }
+            },
         ) {
             Text("Logout")
         }

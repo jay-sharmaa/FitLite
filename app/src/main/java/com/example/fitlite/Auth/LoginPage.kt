@@ -5,39 +5,25 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.fitlite.data.PersonViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginPage(navController : NavController, authViewModel: PersonViewModel, context: Context, user: String) {
+fun LoginPage(
+    navController: NavController,
+    context: Context,
+) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
-
-    Log.d("LoginPage", user.length.toString())
-    Log.d("LoginPage", user)
-    LaunchedEffect(Unit){
-        if(user.isNotEmpty()){
-            navController.navigate("mainScreen/${user}"){
-                popUpTo("login"){inclusive = true}
-            }
-        }
-    }
+    val firebaseAuth = remember { FirebaseAuth.getInstance() }
 
     Box(
         modifier = Modifier
@@ -54,8 +40,7 @@ fun LoginPage(navController : NavController, authViewModel: PersonViewModel, con
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .padding(16.dp),
+                modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -92,34 +77,32 @@ fun LoginPage(navController : NavController, authViewModel: PersonViewModel, con
                         unfocusedBorderColor = Color.Gray,
                         cursorColor = Color.White
                     ),
-                    label = { Text("Password", color = Color.White) }
+                    label = { Text("Password", color = Color.White) },
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
                     onClick = {
-                        var personName: String? = null
-                        var personPassword: String? = null
-                        scope.launch {
-                            personName = authViewModel.getPersonByName(emailState.value)
-                                .map{ it?.name }
-                                .firstOrNull()
-                            personPassword = authViewModel.getPersonByName(emailState.value)
-                                .map{ it?.password }
-                                .firstOrNull()
-                            if(personName != null){
-                                if(personName == emailState.value && personPassword == passwordState.value){
-                                    navController.navigate("mainScreen/${personName}"){
-                                        popUpTo("login"){inclusive = true}
-                                    }
+                        if (emailState.value.isEmpty() || passwordState.value.isEmpty()) {
+                            Toast.makeText(context, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        firebaseAuth.signInWithEmailAndPassword(
+                            emailState.value,
+                            passwordState.value
+                        ).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Log.d("Login", "Firebase login successful")
+                                navController.navigate("mainScreen/${emailState.value}") {
+                                    popUpTo("login") { inclusive = true }
                                 }
-                                else{
-                                    Toast.makeText(context, "Wrong Email or Password", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                            else{
-                                Toast.makeText(context, "User Does Not Exist", Toast.LENGTH_SHORT).show()
+                            } else {
+                                val error = task.exception?.localizedMessage ?: "Login failed"
+                                Toast.makeText(context, "Firebase error: $error", Toast.LENGTH_SHORT).show()
+                                Log.e("FirebaseAuth", "Login failed", task.exception)
                             }
                         }
                     },
@@ -135,7 +118,7 @@ fun LoginPage(navController : NavController, authViewModel: PersonViewModel, con
                     text = "Forgot password?",
                     style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
                     modifier = Modifier.clickable {
-
+                        // Optional: Add password reset logic
                     }
                 )
 
@@ -145,7 +128,7 @@ fun LoginPage(navController : NavController, authViewModel: PersonViewModel, con
                     text = "Don’t have an account? Sign up",
                     style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
                     modifier = Modifier.clickable {
-                        navController.navigate(route = "signup")
+                        navController.navigate("signup")
                     }
                 )
             }

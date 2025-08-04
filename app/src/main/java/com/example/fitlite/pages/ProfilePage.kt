@@ -54,6 +54,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.android.fitlite.R
 import com.example.fitlite.data.PersonViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 suspend fun loadProgress(delayMillis: Long, updateProgress: (Float) -> Unit) {
@@ -64,13 +65,13 @@ suspend fun loadProgress(delayMillis: Long, updateProgress: (Float) -> Unit) {
     }
 }
 
-
 @Composable
-fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel, userName: String, modifier: Modifier) {
+fun ProfilePage(navController: NavHostController, modifier: Modifier) {
     val context = LocalContext.current
     var currentProgress by remember { mutableFloatStateOf(0f) }
     var loading by remember { mutableStateOf(true) }
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val username = FirebaseAuth.getInstance().currentUser?.email
 
     LaunchedEffect(Unit){
         loadProgress(2) {progress ->
@@ -107,7 +108,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: PersonViewModel
                     .size(120.dp)
                     .align(Alignment.BottomCenter)
             )
-            Text(userName, modifier = Modifier.align(Alignment.BottomCenter), style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black))
+            Text(username?: "", modifier = Modifier.align(Alignment.BottomCenter), style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black))
             CircularProgressIndicator(progress = currentProgress,
                 modifier = Modifier
                     .size(130.dp)

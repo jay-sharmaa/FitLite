@@ -59,11 +59,11 @@ fun MyNav(
         composable("splash") {  }
 
         composable("login") {
-            LoginPage(navController, authViewModel, context, user)
+            LoginPage(navController, context)
         }
 
         composable("signup") {
-            SignUpPage(navController, authViewModel, context)
+            SignUpPage(navController, context)
         }
 
         composable("mainScreen/{userName}") { backStackEntry ->

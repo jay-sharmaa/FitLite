@@ -1,36 +1,28 @@
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import android.util.Log
-import com.example.fitlite.data.Person
-import com.example.fitlite.data.PersonViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpPage(navController: NavController, authViewModel: PersonViewModel, context: Context) {
+fun SignUpPage(navController: NavController, context: Context) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val confirmPasswordState = remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    val firebaseAuth = remember { FirebaseAuth.getInstance() }
 
     Box(
         modifier = Modifier
@@ -47,8 +39,7 @@ fun SignUpPage(navController: NavController, authViewModel: PersonViewModel, con
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .padding(16.dp),
+                modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -85,7 +76,8 @@ fun SignUpPage(navController: NavController, authViewModel: PersonViewModel, con
                         unfocusedBorderColor = Color.Gray,
                         cursorColor = Color.White
                     ),
-                    label = { Text("Password", color = Color.White) }
+                    label = { Text("Password", color = Color.White) },
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -99,44 +91,40 @@ fun SignUpPage(navController: NavController, authViewModel: PersonViewModel, con
                         unfocusedBorderColor = Color.Gray,
                         cursorColor = Color.White
                     ),
-                    label = { Text("Confirm Password", color = Color.White) }
+                    label = { Text("Confirm Password", color = Color.White) },
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
                     onClick = {
-                        Log.d("Email", emailState.value)
-                        if(!isValidEmail(emailState.value)) {
+                        if (!isValidEmail(emailState.value)) {
                             Toast.makeText(context, "Invalid email format", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-                        scope.launch {
-                            val personName = authViewModel.getPersonByName(emailState.value)
-                                .map { it?.name }
-                                .firstOrNull()
 
-                            if (personName == null) {
-                                val newPerson = Person(
-                                    name = emailState.value,
-                                    password = passwordState.value,
-                                    age = 25,
-                                    gender = 'F',
-                                    1,
-                                    0,
-                                    emptyList()
-                                )
-                                authViewModel.insert(newPerson)
+                        if (passwordState.value != confirmPasswordState.value) {
+                            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
 
+                        firebaseAuth.createUserWithEmailAndPassword(
+                            emailState.value,
+                            passwordState.value
+                        ).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Log.d("FirebaseAuth", "User created: ${emailState.value}")
                                 navController.navigate("mainScreen/${emailState.value}") {
                                     popUpTo("signup") { inclusive = true }
                                 }
                             } else {
-                                Toast.makeText(context, "Email Already Exists", Toast.LENGTH_LONG).show()
+                                val error = task.exception?.message ?: "Registration failed"
+                                Log.e("FirebaseAuth", "Error: $error", task.exception)
+                                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                             }
                         }
-                    }
-                    ,
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
                 ) {
@@ -153,14 +141,7 @@ fun SignUpPage(navController: NavController, authViewModel: PersonViewModel, con
                         text = "Already have an account? Sign in",
                         style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
                         modifier = Modifier.clickable {
-                            navController.navigate(route = "login")
-                        }
-                    )
-                    Text(
-                        text = "Google Sign",
-                        style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
-                        modifier = Modifier.clickable {
-
+                            navController.navigate("login")
                         }
                     )
                 }
