@@ -70,8 +70,6 @@ Installation
 
 Clone the repository:
 
-# git clone https://github.com/jay-sharmaa/Fitlite.git
-
 Open the project in Android Studio
 Sync Gradle files
 
@@ -135,6 +133,3 @@ Room Database
 CameraX
 Wear OS
 Paging Library
-
-Contact
-# Project Link: [https://github.com/jay-sharmaa/fitlite](https://github.com/jay-sharmaa/Fitlite.git)
