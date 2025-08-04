@@ -11,7 +11,7 @@ data class Person(
     val password: String,
     val age: Int,
     val gender: Char,
-    val plan: Int,
-    val complete: Int,
+    val height: Int,
+    val weight: Int,
     val days: List<Date>
 )

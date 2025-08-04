@@ -36,28 +36,18 @@ fun DietPage(modifier: Modifier, dietName: String, context: Context, oldImage: S
     val TAG = "DietPage"
     val coroutineScope = rememberCoroutineScope()
 
-    // Log the diet name for debugging
-    LaunchedEffect(dietName) {
-        Log.d(TAG, "Loading diet page for: '$dietName'")
-    }
-
     val image = "images/$oldImage"
     val apiService = provideRetrofit()
     val database = AppDatabase.getDatabase(context)
 
-    // Create and remember the ViewModel factory with the diet name
     val factory = remember(dietName) {
-        Log.d(TAG, "Creating new ViewModel factory for: '$dietName'")
         PagingViewModelFactory(apiService, database, dietName)
     }
 
-    // Get the ViewModel using the factory
     val viewModel: PagingViewModel = viewModel(factory = factory)
 
-    // Track refresh state
     var isRefreshing by remember { mutableStateOf(false) }
 
-    // Extract the display name (for UI) from the diet name
     val displayName = remember(dietName) {
         if (dietName.contains(" ")) {
             dietName.substringAfter(" ")
@@ -66,7 +56,6 @@ fun DietPage(modifier: Modifier, dietName: String, context: Context, oldImage: S
         }
     }
 
-    // Track whether we need to try a force refresh
     var needsForceRefresh by remember { mutableStateOf(false) }
 
     // Collect the paging items
@@ -104,10 +93,6 @@ fun DietPage(modifier: Modifier, dietName: String, context: Context, oldImage: S
                 if (lazyPagingItems.itemCount == 0 && needsForceRefresh) {
                     needsForceRefresh = false
                     Log.d(TAG, "No items after refresh, triggering force refresh for '$dietName'")
-                    coroutineScope.launch {
-                        val refreshedFlow = viewModel.refreshData()
-                        // Note: We don't need to collect this flow as the UI is already collecting viewModel.posts
-                    }
                 }
             }
         }

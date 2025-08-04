@@ -42,8 +42,16 @@ fun ExerciseNavigationGraph(navController: NavHostController, modifier: Modifier
             val dataId = backStackEntry.arguments?.getString("dataId")
             FilamentComposeView(Modifier.size(410.dp, 1000.dp), dataId!!)
         }
-        composable("poseCheck") {
-            PoseCheck(modifier = Modifier.size(410.dp, 850.dp), navController = navController)
+        composable(
+            route = "poseCheck/{dataId}",
+            arguments = listOf(
+                navArgument("dataId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val dataId = backStackEntry.arguments?.getString("dataId")
+            PoseCheck(
+                modifier = Modifier.size(410.dp, 850.dp), navController = navController, dataId = dataId!!,
+            )
         }
         composable(
             route = "dietPage/{dietType}/{image}",
