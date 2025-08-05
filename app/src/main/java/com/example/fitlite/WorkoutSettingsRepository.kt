@@ -4,9 +4,14 @@ import android.content.Context
 import androidx.datastore.preferences.core.*
 import com.example.fitlite.myDataStore
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class WorkoutSettingsRepository(private val context: Context) {
 
@@ -39,7 +44,6 @@ class WorkoutSettingsRepository(private val context: Context) {
                     if (!snapshot.exists()) {
                         docRef.set(mapOf(field to default)).await()
                     } else if (snapshot.contains(field)) {
-                        // Document exists, sync field to DataStore
                         val value = snapshot.get(field)
                         context.myDataStore.edit { prefs ->
                             when {
@@ -64,6 +68,20 @@ class WorkoutSettingsRepository(private val context: Context) {
                 is String -> prefs[key as Preferences.Key<String>] = value
                 is Int -> prefs[key as Preferences.Key<Int>] = value
             }
+        }
+    }
+
+    suspend fun addDateToWorkoutHistory(field: String = "workoutDates") {
+        val firestore = FirebaseFirestore.getInstance()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "default_user"
+        val userDocRef = firestore.collection("users").document(userId)
+
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+        try {
+            userDocRef.update(field, FieldValue.arrayUnion(currentDate)).await()
+        } catch (e: Exception) {
+            userDocRef.set(mapOf(field to listOf(currentDate)), SetOptions.merge()).await()
         }
     }
 

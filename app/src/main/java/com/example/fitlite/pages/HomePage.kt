@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -39,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,9 +69,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.fitlite.data.PersonViewModel
 import com.example.fitlite.navigationalComponents.ExerciseNavigationGraph
 import com.example.fitlite.ui.theme.Purple120
+import com.example.fitlite.ui.theme.Purple180
+import com.example.fitlite.ui.theme.Purple80
 import com.example.fitlite.viewModels.HomePageViewModel
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
@@ -363,90 +370,119 @@ fun PrettyDietCard(
 
 @Composable
 fun WeeklyCard(viewModel: HomePageViewModel, context: Context) {
-
     val openAlertDialog = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    val dayWorkOut by viewModel.daysWorkout.collectAsState()
+    val dayWorkOutGoal by viewModel.daysWorkout.collectAsState()
+    val workoutDatesThisWeek by viewModel.weekWorkoutDates.collectAsState()
+
+    LaunchedEffect(Unit) {
+        Log.d("Days", "workoutDatesThisWeek days $workoutDatesThisWeek")
+    }
+
+    val completedDays = workoutDatesThisWeek.size.coerceAtMost(7)
 
     ElevatedCard(
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         modifier = Modifier
             .fillMaxWidth()
             .height(140.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("Weekly goal", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            Text(buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        color = Color.Blue,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                ) {
-                    append(dayWorkOut.toString())
-                }
-                withStyle(style = SpanStyle()) {
-                    append("/7")
-                }
-            },
-                modifier = Modifier.clickable {
-                    scope.launch {
-                        openAlertDialog.value = true
+        Column(Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Weekly goal", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                Text(buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(
+                            color = if(completedDays >= dayWorkOutGoal) Color.Green else Color.Blue,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
+                        append(completedDays.toString())
                     }
-                }
+                    withStyle(style = SpanStyle(
+                        color = if(completedDays >= dayWorkOutGoal) Color.Green else Color.Blue,
+                    )) {
+                        append("/$dayWorkOutGoal")
+                    }
+                },
+                    modifier = Modifier.clickable {
+                        scope.launch {
+                            openAlertDialog.value = true
+                        }
+                    }
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            CircleChip(
+                modifier = Modifier.fillMaxWidth(),
+                completedDates = workoutDatesThisWeek
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
-        CircleChip(Modifier.fillMaxWidth())
     }
-    when {
-        openAlertDialog.value -> {
-            AlertDialogExample(
-                setDays = {
-                    viewModel.setDaysWorkout(it.toInt())
-                },
-                onDismissRequest = {
-                    openAlertDialog.value = false
-                },
-                onConfirmation = {
-                    openAlertDialog.value = false
-                },
-                dialogText = "Set your weekly goal",
-                context = context
-            )
-        }
+
+    if (openAlertDialog.value) {
+        AlertDialogExample(
+            setDays = {
+                viewModel.setDaysWorkout(it.toInt())
+            },
+            onDismissRequest = {
+                openAlertDialog.value = false
+            },
+            onConfirmation = {
+                openAlertDialog.value = false
+            },
+            dialogText = "Set your weekly goal",
+            context = context
+        )
     }
 }
 
 @Composable
-fun CircleChip(modifier: Modifier) {
-    val backgroundColor: Color = Purple120
-    val days = arrayOf("Sun", "Mon", "Tue", "Wed", "Thr", "Fri", "Sat")
+fun CircleChip(modifier: Modifier, completedDates: List<String>) {
+    val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val calendar = Calendar.getInstance().apply {
+        firstDayOfWeek = Calendar.SUNDAY
+        set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+    }
+
+    val weekDaysWithDates = (0..6).map {
+        val date = calendar.time
+        val formattedDate = formatter.format(date)
+        val dayName = SimpleDateFormat("EEE", Locale.getDefault()).format(date)
+        calendar.add(Calendar.DAY_OF_WEEK, 1)
+        Pair(dayName, formattedDate)
+    }
+
     LazyRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceEvenly
-    ){
-        items(days.size){
+    ) {
+        items(weekDaysWithDates) { (dayName, dateString) ->
+            val isCompleted = completedDates.contains(dateString)
+            Log.d("Worked out", isCompleted.toString())
+            val backgroundColor = if (isCompleted) Purple180 else Purple120
+
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(35.dp))
-                    .background(
-                        color = backgroundColor
-                    )
-            ){
+                    .padding(horizontal = 2.dp)
+                    .clip(RoundedCornerShape(30.dp))
+                    .background(backgroundColor)
+            ) {
                 Box(
                     modifier = Modifier
-                        .size(width = 50.dp,
-                            height = 50.dp)
-                ){
-                    Text(days[it], modifier = Modifier.align(alignment = Alignment.Center))
+                        .size(width = 50.dp, height = 50.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = dayName,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

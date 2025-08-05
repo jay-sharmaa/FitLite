@@ -32,9 +32,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.fitlite.myList
+import com.example.fitlite.repository.WorkoutSettingsRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestoreSettings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -52,6 +61,8 @@ fun ExerciseActivity(
     val coroutineScope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     var isSpeaking by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val repository = WorkoutSettingsRepository(context)
 
     val tts = externalTts
 
@@ -173,7 +184,11 @@ fun ExerciseActivity(
                 Button(
                     onClick = {
                         showBottomSheet = false
-                        navController.navigate("poseCheck")
+                        val Id = dataId.toInt()
+                        scope.launch {
+                            repository.addDateToWorkoutHistory()
+                            navController.navigate("poseCheck/$Id")
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
